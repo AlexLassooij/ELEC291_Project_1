@@ -1,0 +1,581 @@
+0000              1   ; Lab_3_38574752.asm: Uses 555 timer and math library built-ins to calculate capacitance
+0000              2   
+                  4   $LIST
+0000              6   
+0000              7   org 0000H
+0000 0204F3       8      ljmp MyProgram
+0003              9   
+0003             10   ; These register definitions needed by 'math32.inc'
+0030             11   DSEG at 30H
+0030             12   x:   ds 4
+0034             13   y:   ds 4
+0038             14   bcd: ds 5
+003D             15   
+0000             16   BSEG
+0000             17   
+0000             18   mf: dbit 1
+0001             19   
+0001             20   ; These 'equ' must match the hardware wiring
+0001             21   ; They are used by 'LCD_4bit.inc'
+0001             22   LCD_RS equ P2.0
+0001             23   LCD_RW equ P1.7
+0001             24   LCD_E  equ P1.6
+0001             25   LCD_D4 equ P1.1
+0001             26   LCD_D5 equ P1.0
+0001             27   LCD_D6 equ P0.7
+0001             28   LCD_D7 equ P0.6
+0001             29   
+0001             30   
+                546   $LIST
+                 33   $LIST
+043B             35   
+043B             36   RECALC          equ P2.1
+043B             37   CAL_freq        equ P3.3
+043B             38   CAL_nF          equ P3.0
+043B             39   CAL_uF          equ P2.4
+043B             40   
+043B             41   CSEG
+043B             42   
+043B 46726571    43   Msgfreq:     db 'Frequency (Hz):', 0
+     75656E63
+     79202848
+     7A293A00
+044B 43617061    44   Msgcapn:     db 'Capacitance (nF):', 0
+     63697461
+     6E636520
+     286E4629
+     3A00
+045D 43617061    45   Msgcapu:     db 'Capacitance (uF):', 0
+     63697461
+     6E636520
+     28754629
+     3A00
+046F 20202020    46   WelcomeMsg1: db '     Welcome    ', 0
+     2057656C
+     636F6D65
+     20202020
+     00
+0480 43686F6F    47   WelcomeMsg2: db 'Choose an Option', 0
+     73652061
+     6E204F70
+     74696F6E
+     00
+0491 42313A20    48   WelcomeMsg3: db 'B1: Frequency   ', 0
+     46726571
+     75656E63
+     79202020
+     00
+04A2 42323A20    49   WelcomeMsg4: db 'B2: Cap in nF   ', 0
+     43617020
+     696E206E
+     46202020
+     00
+04B3 42333A20    50   WelcomeMsg5: db 'B3: Cap in uF   ', 0
+     43617020
+     696E2075
+     46202020
+     00
+04C4 42343A20    51   WelcomeMsg6: db 'B4: Recalculate ', 0
+     52656361
+     6C63756C
+     61746520
+     00
+04D5 20202020    52   Clear_Line:  db '                ', 0
+     20202020
+     20202020
+     20202020
+     00
+04E6             53   
+                 54   wait_for_response mac
+                 55   response_loop_%M:
+                 56   	jb RECALC, frequency_response_%M ; loop while the button is not pressed
+                 57   	Wait_Milli_Seconds(#50) ; debounce time
+                 58   	jb RECALC, frequency_response_%M ; it was a bounce, try again
+                 59   	jnb RECALC, $ ; loop while the button is pressed
+                 60       ljmp %0
+                 61   
+                 62   frequency_response_%M:
+                 63       jb CAL_freq, nF_response_%M 
+                 64   	Wait_Milli_Seconds(#50) 
+                 65   	jb CAL_freq, nF_response_%M 
+                 66   	jnb CAL_freq, $ 
+                 67       ljmp FREQ
+                 68   
+                 69   nF_response_%M:
+                 70       jb CAL_nF, uF_response_%M 
+                 71   	Wait_Milli_Seconds(#50) 
+                 72   	jb CAL_nF, uF_response_%M 
+                 73   	jnb CAL_nF, $ 
+                 74       ljmp Cap_nF
+                 75   
+                 76   uF_response_%M:
+                 77       jb CAL_uF, response_loop_%M 
+                 78   	Wait_Milli_Seconds(#50) 
+                 79   	jb CAL_uF, response_loop_%M 
+                 80   	jnb CAL_uF, $ 
+                 81       ljmp Cap_uF
+                 82   
+                 83   endmac
+04E6             84   
+04E6             85   
+04E6             86   ; This 'wait' must be as precise as possible. Sadly the 24.5MHz clock in the EFM8LB1 has an accuracy of just 2%.
+04E6             87   Wait_one_second:         
+04E6             88       ;For a 24.5MHz clock one machine cycle takes 1/24.5MHz=40.81633ns
+04E6 7AC6        89       mov R2, #198 ; Calibrate using this number to account for overhead delays
+04E8 79F5        90   X3: mov R1, #245
+04EA 78A7        91   X2: mov R0, #167
+04EC D8FE        92   X1: djnz R0, X1 ; 3 machine cycles -> 3*40.81633ns*167=20.44898us (see table 10.2 in reference manual)
+04EE D9FA        93       djnz R1, X2 ; 20.44898us*245=5.01ms
+04F0 DAF6        94       djnz R2, X3 ; 5.01ms*198=0.991s + overhead
+04F2 22          95       ret
+04F3             96   
+04F3             97   ;Converts the hex number in TH0-TL0 to packed BCD in R2-R1-R0
+04F3             98       
+04F3             99   MyProgram:
+04F3 75817F     100            mov sp, #0x7F ; Initialize the stack pointer
+04F6            101       
+04F6            102       ; DISABLE WDT: provide Watchdog disable keys
+04F6 7597DE     103            mov     WDTCN,#0xDE ; First key
+04F9 7597AD     104            mov     WDTCN,#0xAD ; Second key
+04FC            105   
+04FC            106       ; Enable crossbar and weak pull-ups
+04FC 75E100     107            mov     XBR0,#0x00
+04FF 75E210     108            mov     XBR1,#0x10 ; Enable T0 on P0.0.  T0 is the external clock input to Timer/Counter 0
+0502 75E340     109            mov     XBR2,#0x40
+0505            110   
+0505            111            ; Switch clock to 24.5 MHz
+0505 75A900     112            mov     CLKSEL, #0x00 ; 
+0508 75A900     113            mov     CLKSEL, #0x00 ; Second write to CLKSEL is required according to the user manual (page 77)
+050B            114            
+050B            115            ; Wait for the 24.5 MHz oscillator to stabilze by checking bit DIVRDY in CLKSEL
+050B            116   waitclockstable:
+050B E5A9       117            mov a, CLKSEL
+050D 30E7FB     118            jnb acc.7, waitclockstable
+0510            119            
+0510            120            ;Initializes timer/counter 0 as a 16-bit counter
+0510 C28C       121       clr TR0 ; Stop timer 0
+0512 E589       122       mov a, TMOD
+0514 54F0       123       anl a, #0b_1111_0000 ; Clear the bits of timer/counter 0
+0516 4405       124       orl a, #0b_0000_0101 ; Sets the bits of timer/counter 0 for a 16-bit counter
+0518 F589       125       mov TMOD, a
+051A            126   
+051A            127            ; Configure LCD and display initial message
+051A 12005D     128       lcall LCD_4BIT
+051D            129            
+051D            130   main_loop:
+051D            131   
+051D            132            ; data pointer high and low
+051D C083       132            push dph
+051F C082       132            push dpl
+0521 C0E0       132            push acc
+0523 90046F     132            mov dptr, #WelcomeMsg1
+0526 E4         132            clr a
+0527 12009F     132            lcall ?Set_Cursor_1
+052A 120092     132            lcall ?Send_Constant_String
+052D D0E0       132            pop acc
+052F D082       132            pop dpl
+0531 D083       132            pop dph
+0533 C002       133       push AR2
+0535 C003       133       push AR3
+0537 7B01       133       mov R3, #1
+0539 7AC8       133   L428:    mov R2, #200
+053B 12000E     133            lcall ?Wait_Milli_Seconds
+053E 7AC8       133            mov R2, #200
+0540 12000E     133            lcall ?Wait_Milli_Seconds
+0543 7AC8       133            mov R2, #200
+0545 12000E     133            lcall ?Wait_Milli_Seconds
+0548 7AC8       133            mov R2, #200
+054A 12000E     133            lcall ?Wait_Milli_Seconds
+054D 7AC8       133            mov R2, #200
+054F 12000E     133            lcall ?Wait_Milli_Seconds
+0552 DBE5       133            djnz R3, L428
+0554 D002       133       pop AR2
+0556 D003       133       pop AR3
+0558            134            ; data pointer high and low
+0558 C083       134            push dph
+055A C082       134            push dpl
+055C C0E0       134            push acc
+055E 900480     134            mov dptr, #WelcomeMsg2
+0561 E4         134            clr a
+0562 12009D     134            lcall ?Set_Cursor_2
+0565 120092     134            lcall ?Send_Constant_String
+0568 D0E0       134            pop acc
+056A D082       134            pop dpl
+056C D083       134            pop dph
+056E C002       135       push AR2
+0570 C003       135       push AR3
+0572 7B02       135       mov R3, #2
+0574 7AC8       135   L430:    mov R2, #200
+0576 12000E     135            lcall ?Wait_Milli_Seconds
+0579 7AC8       135            mov R2, #200
+057B 12000E     135            lcall ?Wait_Milli_Seconds
+057E 7AC8       135            mov R2, #200
+0580 12000E     135            lcall ?Wait_Milli_Seconds
+0583 7AC8       135            mov R2, #200
+0585 12000E     135            lcall ?Wait_Milli_Seconds
+0588 7AC8       135            mov R2, #200
+058A 12000E     135            lcall ?Wait_Milli_Seconds
+058D DBE5       135            djnz R3, L430
+058F D002       135       pop AR2
+0591 D003       135       pop AR3
+0593            136            ; data pointer high and low
+0593 C083       136            push dph
+0595 C082       136            push dpl
+0597 C0E0       136            push acc
+0599 900491     136            mov dptr, #WelcomeMsg3
+059C E4         136            clr a
+059D 12009F     136            lcall ?Set_Cursor_1
+05A0 120092     136            lcall ?Send_Constant_String
+05A3 D0E0       136            pop acc
+05A5 D082       136            pop dpl
+05A7 D083       136            pop dph
+05A9            137            ; data pointer high and low
+05A9 C083       137            push dph
+05AB C082       137            push dpl
+05AD C0E0       137            push acc
+05AF 9004A2     137            mov dptr, #WelcomeMsg4
+05B2 E4         137            clr a
+05B3 12009D     137            lcall ?Set_Cursor_2
+05B6 120092     137            lcall ?Send_Constant_String
+05B9 D0E0       137            pop acc
+05BB D082       137            pop dpl
+05BD D083       137            pop dph
+05BF C002       138       push AR2
+05C1 C003       138       push AR3
+05C3 7B02       138       mov R3, #2
+05C5 7AC8       138   L433:    mov R2, #200
+05C7 12000E     138            lcall ?Wait_Milli_Seconds
+05CA 7AC8       138            mov R2, #200
+05CC 12000E     138            lcall ?Wait_Milli_Seconds
+05CF 7AC8       138            mov R2, #200
+05D1 12000E     138            lcall ?Wait_Milli_Seconds
+05D4 7AC8       138            mov R2, #200
+05D6 12000E     138            lcall ?Wait_Milli_Seconds
+05D9 7AC8       138            mov R2, #200
+05DB 12000E     138            lcall ?Wait_Milli_Seconds
+05DE DBE5       138            djnz R3, L433
+05E0 D002       138       pop AR2
+05E2 D003       138       pop AR3
+05E4            139            ; data pointer high and low
+05E4 C083       139            push dph
+05E6 C082       139            push dpl
+05E8 C0E0       139            push acc
+05EA 9004B3     139            mov dptr, #WelcomeMsg5
+05ED E4         139            clr a
+05EE 12009F     139            lcall ?Set_Cursor_1
+05F1 120092     139            lcall ?Send_Constant_String
+05F4 D0E0       139            pop acc
+05F6 D082       139            pop dpl
+05F8 D083       139            pop dph
+05FA            140            ; data pointer high and low
+05FA C083       140            push dph
+05FC C082       140            push dpl
+05FE C0E0       140            push acc
+0600 9004C4     140            mov dptr, #WelcomeMsg6
+0603 E4         140            clr a
+0604 12009D     140            lcall ?Set_Cursor_2
+0607 120092     140            lcall ?Send_Constant_String
+060A D0E0       140            pop acc
+060C D082       140            pop dpl
+060E D083       140            pop dph
+0610            141   
+0610            142   response_loop_36:
+0610 20A112     142            jb RECALC, frequency_response_36 ; loop while the button is not pressed
+0613 C002       142            push AR2
+0615 7A32       142            mov R2, #50
+0617 12000E     142            lcall ?Wait_Milli_Seconds
+061A D002       142            pop AR2 ; debounce time
+061C 20A106     142            jb RECALC, frequency_response_36 ; it was a bounce, try again
+061F 30A1FD     142            jnb RECALC, $ ; loop while the button is pressed
+0622 02051D     142       ljmp main_loop
+0625            142   
+0625            142   frequency_response_36:
+0625 20B312     142       jb CAL_freq, nF_response_36 
+0628 C002       142            push AR2
+062A 7A32       142            mov R2, #50
+062C 12000E     142            lcall ?Wait_Milli_Seconds
+062F D002       142            pop AR2 
+0631 20B306     142            jb CAL_freq, nF_response_36 
+0634 30B3FD     142            jnb CAL_freq, $ 
+0637 020674     142       ljmp FREQ
+063A            142   
+063A            142   nF_response_36:
+063A 20B012     142       jb CAL_nF, uF_response_36 
+063D C002       142            push AR2
+063F 7A32       142            mov R2, #50
+0641 12000E     142            lcall ?Wait_Milli_Seconds
+0644 D002       142            pop AR2 
+0646 20B006     142            jb CAL_nF, uF_response_36 
+0649 30B0FD     142            jnb CAL_nF, $ 
+064C 020707     142       ljmp Cap_nF
+064F            142   
+064F            142   uF_response_36:
+064F 20A4BE     142       jb CAL_uF, response_loop_36 
+0652 C002       142            push AR2
+0654 7A32       142            mov R2, #50
+0656 12000E     142            lcall ?Wait_Milli_Seconds
+0659 D002       142            pop AR2 
+065B 20A4B2     142            jb CAL_uF, response_loop_36 
+065E 30A4FD     142            jnb CAL_uF, $ 
+0661 0207C9     142       ljmp Cap_uF
+0664            142   
+0664            143   
+0664            144   timer_count:
+0664            145       ; Measure the frequency applied to pin T0 (T0 is routed to pin P0.0 using the 'crossbar')
+0664 C28C       146       clr TR0 ; Stop counter 0
+0666 758A00     147       mov TL0, #0
+0669 758C00     148       mov TH0, #0
+066C D28C       149       setb TR0 ; Start counter 0
+066E 1204E6     150       lcall Wait_one_second
+0671 C28C       151       clr TR0 ; Stop counter 0, TH0-TL0 has the frequency
+0673            152   
+0673 22         153       ret
+0674            154   
+0674            155   FREQ:
+0674            156            ; data pointer high and low
+0674 C083       156            push dph
+0676 C082       156            push dpl
+0678 C0E0       156            push acc
+067A 90043B     156            mov dptr, #Msgfreq
+067D E4         156            clr a
+067E 12009F     156            lcall ?Set_Cursor_1
+0681 120092     156            lcall ?Send_Constant_String
+0684 D0E0       156            pop acc
+0686 D082       156            pop dpl
+0688 D083       156            pop dph
+068A            157            ; data pointer high and low
+068A C083       157            push dph
+068C C082       157            push dpl
+068E C0E0       157            push acc
+0690 9004D5     157            mov dptr, #Clear_Line
+0693 E4         157            clr a
+0694 12009D     157            lcall ?Set_Cursor_2
+0697 120092     157            lcall ?Send_Constant_String
+069A D0E0       157            pop acc
+069C D082       157            pop dpl
+069E D083       157            pop dph
+06A0 120664     158       lcall timer_count
+06A3 C0E0       159            push acc
+06A5 7401       159            mov a, #1
+06A7 14         159            dec a
+06A8 12009D     159            lcall ?Set_Cursor_2 ; Select column and row
+06AB D0E0       159            pop acc
+06AD 12017E     160       lcall hex2bcd_5
+06B0 1201A0     161       lcall DisplayBCD_5
+06B3            162   response_loop_44:
+06B3 20A112     162            jb RECALC, frequency_response_44 ; loop while the button is not pressed
+06B6 C002       162            push AR2
+06B8 7A32       162            mov R2, #50
+06BA 12000E     162            lcall ?Wait_Milli_Seconds
+06BD D002       162            pop AR2 ; debounce time
+06BF 20A106     162            jb RECALC, frequency_response_44 ; it was a bounce, try again
+06C2 30A1FD     162            jnb RECALC, $ ; loop while the button is pressed
+06C5 020674     162       ljmp FREQ
+06C8            162   
+06C8            162   frequency_response_44:
+06C8 20B312     162       jb CAL_freq, nF_response_44 
+06CB C002       162            push AR2
+06CD 7A32       162            mov R2, #50
+06CF 12000E     162            lcall ?Wait_Milli_Seconds
+06D2 D002       162            pop AR2 
+06D4 20B306     162            jb CAL_freq, nF_response_44 
+06D7 30B3FD     162            jnb CAL_freq, $ 
+06DA 020674     162       ljmp FREQ
+06DD            162   
+06DD            162   nF_response_44:
+06DD 20B012     162       jb CAL_nF, uF_response_44 
+06E0 C002       162            push AR2
+06E2 7A32       162            mov R2, #50
+06E4 12000E     162            lcall ?Wait_Milli_Seconds
+06E7 D002       162            pop AR2 
+06E9 20B006     162            jb CAL_nF, uF_response_44 
+06EC 30B0FD     162            jnb CAL_nF, $ 
+06EF 020707     162       ljmp Cap_nF
+06F2            162   
+06F2            162   uF_response_44:
+06F2 20A4BE     162       jb CAL_uF, response_loop_44 
+06F5 C002       162            push AR2
+06F7 7A32       162            mov R2, #50
+06F9 12000E     162            lcall ?Wait_Milli_Seconds
+06FC D002       162            pop AR2 
+06FE 20A4B2     162            jb CAL_uF, response_loop_44 
+0701 30A4FD     162            jnb CAL_uF, $ 
+0704 0207C9     162       ljmp Cap_uF
+0707            162   
+0707            163            
+0707            164   Cap_nF:
+0707            165            ; data pointer high and low
+0707 C083       165            push dph
+0709 C082       165            push dpl
+070B C0E0       165            push acc
+070D 90044B     165            mov dptr, #Msgcapn
+0710 E4         165            clr a
+0711 12009F     165            lcall ?Set_Cursor_1
+0714 120092     165            lcall ?Send_Constant_String
+0717 D0E0       165            pop acc
+0719 D082       165            pop dpl
+071B D083       165            pop dph
+071D            166            ; data pointer high and low
+071D C083       166            push dph
+071F C082       166            push dpl
+0721 C0E0       166            push acc
+0723 9004D5     166            mov dptr, #Clear_Line
+0726 E4         166            clr a
+0727 12009D     166            lcall ?Set_Cursor_2
+072A 120092     166            lcall ?Send_Constant_String
+072D D0E0       166            pop acc
+072F D082       166            pop dpl
+0731 D083       166            pop dph
+0733 120664     167       lcall timer_count
+0736 753000     168            mov x+0, #low (1000000000 % 0x10000) 
+0739 7531CA     168            mov x+1, #high(1000000000 % 0x10000) 
+073C 75329A     168            mov x+2, #low (1000000000 / 0x10000) 
+073F 75333B     168            mov x+3, #high(1000000000 / 0x10000) 
+0742 858A34     169       mov y+0, TL0
+0745 858C35     170       mov y+1, TH0
+0748 753600     171       mov y+2, #0
+074B 753700     172       mov y+3, #0
+074E 1203D2     173       lcall div32
+0751 753490     174            mov y+0, #low (144 % 0x10000) 
+0754 753500     174            mov y+1, #high(144 % 0x10000) 
+0757 753600     174            mov y+2, #low (144 / 0x10000) 
+075A 753700     174            mov y+3, #high(144 / 0x10000)  ; left shift by 2 decimals
+075D 120345     175       lcall mul32
+0760            176       ; 1.44 / (Ra+2Rb)*C
+0760            177       ; Ra = 9860, Rb = 9860
+0760 753428     178            mov y+0, #low (296 % 0x10000) 
+0763 753501     178            mov y+1, #high(296 % 0x10000) 
+0766 753600     178            mov y+2, #low (296 / 0x10000) 
+0769 753700     178            mov y+3, #high(296 / 0x10000)  ; left shift by 2 decimals
+076C 1203D2     179       lcall div32
+076F 1201CB     180       lcall hex2bcd
+0772 1200BA     181       lcall Display_formated_BCD_2
+0775            182   response_loop_54:
+0775 20A112     182            jb RECALC, frequency_response_54 ; loop while the button is not pressed
+0778 C002       182            push AR2
+077A 7A32       182            mov R2, #50
+077C 12000E     182            lcall ?Wait_Milli_Seconds
+077F D002       182            pop AR2 ; debounce time
+0781 20A106     182            jb RECALC, frequency_response_54 ; it was a bounce, try again
+0784 30A1FD     182            jnb RECALC, $ ; loop while the button is pressed
+0787 020707     182       ljmp Cap_nF
+078A            182   
+078A            182   frequency_response_54:
+078A 20B312     182       jb CAL_freq, nF_response_54 
+078D C002       182            push AR2
+078F 7A32       182            mov R2, #50
+0791 12000E     182            lcall ?Wait_Milli_Seconds
+0794 D002       182            pop AR2 
+0796 20B306     182            jb CAL_freq, nF_response_54 
+0799 30B3FD     182            jnb CAL_freq, $ 
+079C 020674     182       ljmp FREQ
+079F            182   
+079F            182   nF_response_54:
+079F 20B012     182       jb CAL_nF, uF_response_54 
+07A2 C002       182            push AR2
+07A4 7A32       182            mov R2, #50
+07A6 12000E     182            lcall ?Wait_Milli_Seconds
+07A9 D002       182            pop AR2 
+07AB 20B006     182            jb CAL_nF, uF_response_54 
+07AE 30B0FD     182            jnb CAL_nF, $ 
+07B1 020707     182       ljmp Cap_nF
+07B4            182   
+07B4            182   uF_response_54:
+07B4 20A4BE     182       jb CAL_uF, response_loop_54 
+07B7 C002       182            push AR2
+07B9 7A32       182            mov R2, #50
+07BB 12000E     182            lcall ?Wait_Milli_Seconds
+07BE D002       182            pop AR2 
+07C0 20A4B2     182            jb CAL_uF, response_loop_54 
+07C3 30A4FD     182            jnb CAL_uF, $ 
+07C6 0207C9     182       ljmp Cap_uF
+07C9            182   
+07C9            182   
+07C9            183   
+07C9            184   Cap_uF:
+07C9            185            ; data pointer high and low
+07C9 C083       185            push dph
+07CB C082       185            push dpl
+07CD C0E0       185            push acc
+07CF 90045D     185            mov dptr, #Msgcapu
+07D2 E4         185            clr a
+07D3 12009F     185            lcall ?Set_Cursor_1
+07D6 120092     185            lcall ?Send_Constant_String
+07D9 D0E0       185            pop acc
+07DB D082       185            pop dpl
+07DD D083       185            pop dph
+07DF            186            ; data pointer high and low
+07DF C083       186            push dph
+07E1 C082       186            push dpl
+07E3 C0E0       186            push acc
+07E5 9004D5     186            mov dptr, #Clear_Line
+07E8 E4         186            clr a
+07E9 12009D     186            lcall ?Set_Cursor_2
+07EC 120092     186            lcall ?Send_Constant_String
+07EF D0E0       186            pop acc
+07F1 D082       186            pop dpl
+07F3 D083       186            pop dph
+07F5 120664     187       lcall timer_count
+07F8 753040     188            mov x+0, #low (1000000 % 0x10000) 
+07FB 753142     188            mov x+1, #high(1000000 % 0x10000) 
+07FE 75320F     188            mov x+2, #low (1000000 / 0x10000) 
+0801 753300     188            mov x+3, #high(1000000 / 0x10000)  ; 
+0804 858A34     189       mov y+0, TL0
+0807 858C35     190       mov y+1, TH0
+080A 753600     191       mov y+2, #0
+080D 753700     192       mov y+3, #0
+0810 1203D2     193       lcall div32
+0813 753490     194            mov y+0, #low (144 % 0x10000) 
+0816 753500     194            mov y+1, #high(144 % 0x10000) 
+0819 753600     194            mov y+2, #low (144 / 0x10000) 
+081C 753700     194            mov y+3, #high(144 / 0x10000) 
+081F 120345     195       lcall mul32
+0822 753428     196            mov y+0, #low (296 % 0x10000) 
+0825 753501     196            mov y+1, #high(296 % 0x10000) 
+0828 753600     196            mov y+2, #low (296 / 0x10000) 
+082B 753700     196            mov y+3, #high(296 / 0x10000) 
+082E 1203D2     197       lcall div32
+0831 1201CB     198       lcall hex2bcd
+0834 1200BA     199       lcall Display_formated_BCD_2
+0837            200   response_loop_64:
+0837 20A112     200            jb RECALC, frequency_response_64 ; loop while the button is not pressed
+083A C002       200            push AR2
+083C 7A32       200            mov R2, #50
+083E 12000E     200            lcall ?Wait_Milli_Seconds
+0841 D002       200            pop AR2 ; debounce time
+0843 20A106     200            jb RECALC, frequency_response_64 ; it was a bounce, try again
+0846 30A1FD     200            jnb RECALC, $ ; loop while the button is pressed
+0849 0207C9     200       ljmp Cap_uF
+084C            200   
+084C            200   frequency_response_64:
+084C 20B312     200       jb CAL_freq, nF_response_64 
+084F C002       200            push AR2
+0851 7A32       200            mov R2, #50
+0853 12000E     200            lcall ?Wait_Milli_Seconds
+0856 D002       200            pop AR2 
+0858 20B306     200            jb CAL_freq, nF_response_64 
+085B 30B3FD     200            jnb CAL_freq, $ 
+085E 020674     200       ljmp FREQ
+0861            200   
+0861            200   nF_response_64:
+0861 20B012     200       jb CAL_nF, uF_response_64 
+0864 C002       200            push AR2
+0866 7A32       200            mov R2, #50
+0868 12000E     200            lcall ?Wait_Milli_Seconds
+086B D002       200            pop AR2 
+086D 20B006     200            jb CAL_nF, uF_response_64 
+0870 30B0FD     200            jnb CAL_nF, $ 
+0873 020707     200       ljmp Cap_nF
+0876            200   
+0876            200   uF_response_64:
+0876 20A4BE     200       jb CAL_uF, response_loop_64 
+0879 C002       200            push AR2
+087B 7A32       200            mov R2, #50
+087D 12000E     200            lcall ?Wait_Milli_Seconds
+0880 D002       200            pop AR2 
+0882 20A4B2     200            jb CAL_uF, response_loop_64 
+0885 30A4FD     200            jnb CAL_uF, $ 
+0888 0207C9     200       ljmp Cap_uF
+088B            200   
+088B            201            
+088B            202   END
