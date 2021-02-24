@@ -49,101 +49,101 @@ F_SCK_MAX      EQU 20000000
 BAUDRATE       EQU 115200
 
 sound_index :
-    ZERO EQU 0x00, 0x00, 0x4d ; 0 
-    ONE EQU 0x00, 0x3a, 0x02 ; 1 
-    TWO EQU 0x00, 0x76, 0xd4 ; 2 
-    THREE EQU 0x00, 0x97, 0xb9 ; 3 
-    FOUR EQU 0x00, 0xca, 0x2d ; 4 
-    FIVE EQU 0x01, 0x07, 0xb5 ; 5 
-    SIX EQU 0x01, 0x32, 0xdc ; 6 
-    SEVEN EQU 0x01, 0x69, 0xc5 ; 7 
-    EIGHT EQU 0x01, 0xa8, 0xe3 ; 8 
-    NINE EQU 0x01, 0xcb, 0xd1 ; 9 
-    TEN EQU 0x02, 0x06, 0xcd ; 10 
-    ELEVEN EQU 0x02, 0x3f, 0xee ; 11 
-    TWELVE EQU 0x02, 0x85, 0x51 ; 12 
-    THIRTEEN EQU 0x02, 0xca, 0xf3 ; 13 
-    FOURTEEN EQU 0x03, 0x0e, 0x3c ; 14 
-    ZERO EQU 0x03, 0x5b, 0x4b ; 15 
-    ZERO EQU 0x03, 0xa7, 0xb5 ; 16 
-    ZERO EQU 0x03, 0xf6, 0x8e ; 17 
-    ZERO EQU 0x04, 0x4e, 0x98 ; 18 
-    ZERO EQU 0x04, 0x8c, 0x64 ; 19 
-    ZERO EQU 0x04, 0xd6, 0x78 ; 20 
-    ZERO EQU 0x05, 0x20, 0x67 ; 21 
-    ZERO EQU 0x05, 0x66, 0xc7 ; 22 
-    ZERO EQU 0x05, 0xb6, 0xda ; 23 
-    ZERO EQU 0x06, 0x04, 0x87 ; 24 
-    ZERO EQU 0x06, 0x5a, 0x38 ; 25 
-    ZERO EQU 0x06, 0xb5, 0x0b ; 26 
-    ZERO EQU 0x06, 0xf4, 0xfc ; 27 
-    ZERO EQU 0x07, 0x49, 0x20 ; 28 
-    ZERO EQU 0x07, 0x8c, 0x87 ; 29 
-    ZERO EQU 0x07, 0xc8, 0xe1 ; 30 
-    ZERO EQU 0x08, 0x07, 0xb8 ; 31 
-    ZERO EQU 0x08, 0x53, 0x47 ; 32 
-    ZERO EQU 0x08, 0x92, 0xc7 ; 33 
-    ZERO EQU 0x08, 0xca, 0xfb ; 34 
-    ZERO EQU 0x09, 0x12, 0x09 ; 35 
-    MILLI EQU 0x09, 0x5f, 0x89 ; 36 
-    METERS EQU 0x09, 0x98, 0x1d ; 37 
-    PER EQU 0x09, 0xed, 0xf9 ; 38 
-    CENT EQU 0x0a, 0x1d, 0xb5 ; 39 
-    CUP EQU 0x0a, 0x54, 0x25 ; 40 
-    IS EQU 0x0a, 0x81, 0x61 ; 41 
-    FULL EQU 0x0a, 0xa5, 0x07 ; 42 
-    EMPTY EQU 0x0a, 0xcf, 0xf5 ; 43  
-    bruh1 EQU 0x0b, 0x16, 0xe0 ; 44 
-    bruh2 EQU 0x0b, 0x2f, 0x5c :
+    ZERO EQU 0x00004d ; 0 
+    ONE EQU 0x003a02 ; 1 
+    TWO EQU 0x0076d4 ; 2 
+    THREE EQU 0x0097b9 ; 3 
+    FOUR EQU 0x00ca2d ; 4 
+    FIVE EQU 0x0107b5 ; 5 
+    SIX EQU 0x0132dc ; 6 
+    SEVEN EQU 0x0169c5 ; 7 
+    EIGHT EQU 0x01a8e3 ; 8 
+    NINE EQU 0x01cbd1 ; 9 
+    TEN EQU 0x0206cd ; 10 
+    ELEVEN EQU 0x023fee ; 11 
+    TWELVE EQU 0x028551 ; 12 
+    THIRTEEN EQU 0x02caf3 ; 13 
+    FOURTEEN EQU 0x030e3c ; 14 
+    FIFTEEN EQU 0x035b4b ; 15 
+    SIXTEEN EQU 0x03a7b5 ; 16 
+    SEVENTEEN EQU 0x03f68e ; 17 
+    EIGHTEEEN EQU 0x044e98 ; 18 
+    NINETEEN EQU 0x048c64 ; 19 
+    TWENTY EQU 0x04d678 ; 20 
+    THIRTY EQU 0x052067 ; 21 
+    FORTY EQU 0x0566c7 ; 22 
+    FIFTY EQU 0x05b6da ; 23 
+    SIXTY EQU 0x060487 ; 24 
+    SEVENTY EQU 0x065a38 ; 25 
+    EIGHTY EQU 0x06b50b ; 26 
+    NINETY EQU 0x06f4fc ; 27 
+    HUNDRED EQU 0x074920 ; 28 
+    POINT EQU 0x078c87 ; 29 
+    NANO EQU 0x07c8e1 ; 30 
+    MICRO EQU 0x0807b8 ; 31 
+    FARADS EQU 0x085347 ; 32 
+    WATER EQU 0x0892c7 ; 33 
+    LEVEL EQU 0x08cafb ; 34 
+    CENTI EQU 0x091209 ; 35 
+    MILLI EQU 0x095f89 ; 36 
+    METERS EQU 0x09981d ; 37 
+    PER EQU 0x09edf9 ; 38 
+    CENT EQU 0x0a1db5 ; 39 
+    CUP EQU 0x0a5425 ; 40 
+    IS EQU 0x0a8161 ; 41 
+    FULL EQU 0x0aa507 ; 42 
+    EMPTY EQU 0x0acff5 ; 43  
+    ;bruh1 EQU 0x0b16e0 ; 44 
+    ;bruh2 EQU 0x0b2f5c :
 
 
 ; Size of each sound in 'sound_index'
 Size_sound:
-    ZERO_LEN EQU 0x00, 0x39, 0xb5 ; 0 
-    ONE_LEN EQU 0x00, 0x3c, 0xd2 ; 1 
-    TWO_LEN EQU 0x00, 0x20, 0xe5 ; 2 
-    THREE_LEN EQU 0x00, 0x32, 0x74 ; 3 
-    FOUR_LEN EQU 0x00, 0x3d, 0x88 ; 4 
-    FIVE_LEN EQU 0x00, 0x2b, 0x27 ; 5 
-    SIX_LEN EQU 0x00, 0x36, 0xe9 ; 6 
-    SEVEN_LEN EQU 0x00, 0x3f, 0x1e ; 7 
-    EIGHT_LEN EQU 0x00, 0x22, 0xee ; 8 
-    NINE_LEN EQU 0x00, 0x3a, 0xfc ; 9 
-    TEN_LEN EQU 0x00, 0x39, 0x21 ; 10 
-    ELEVEN_LEN EQU 0x00, 0x45, 0x63 ; 11 
-    TWELVE_LEN EQU 0x00, 0x45, 0xa2 ; 12 
-    THIRTEEN_LEN EQU 0x00, 0x43, 0x49 ; 13 
-    FOURTEEN_LEN EQU 0x00, 0x4d, 0x0f ; 14 
-    FIFTEEN_LEN EQU 0x00, 0x4c, 0x6a ; 15 
-    SIXTEEN_LEN EQU 0x00, 0x4e, 0xd9 ; 16 
-    SEVENTEEN_LEN EQU 0x00, 0x58, 0x0a ; 17 
-    EIGHTEEN_LEN EQU 0x00, 0x3d, 0xcc ; 18 
-    NINETEEN_LEN EQU 0x00, 0x4a, 0x14 ; 19 
-    TWENTY_LEN EQU 0x00, 0x49, 0xef ; 20 
-    THIRTY_LEN EQU 0x00, 0x46, 0x60 ; 21 
-    FORTY_LEN EQU 0x00, 0x50, 0x13 ; 22 
-    FIFTY_LEN EQU 0x00, 0x4d, 0xad ; 23 
-    SIXTY_LEN EQU 0x00, 0x55, 0xb1 ; 24 
-    SEVENTY_LEN EQU 0x00, 0x5a, 0xd3 ; 25 
-    EIGHTY_LEN EQU 0x00, 0x3f, 0xf1 ; 26 
-    NINETY_LEN EQU 0x00, 0x54, 0x24 ; 27 
-    HUNDRED_LEN EQU 0x00, 0x43, 0x67 ; 28 
-    POINT_LEN EQU 0x00, 0x3c, 0x5a ; 29 
-    NANO_LEN EQU 0x00, 0x3e, 0xd7 ; 30 
-    MICRO_LEN EQU 0x00, 0x4b, 0x8f ; 31 
-    FARADS_LEN EQU 0x00, 0x3f, 0x80 ; 32 
-    WATER_LEN EQU 0x00, 0x38, 0x34 ; 33 
-    LEVEL_LEN EQU 0x00, 0x47, 0x0e ; 34 
-    CENTI_LEN EQU 0x00, 0x4d, 0x80 ; 35 
-    MILLI_LEN EQU 0x00, 0x38, 0x94 ; 36 
-    METERS_LEN EQU 0x00, 0x55, 0xdc ; 37 
-    PER_LEN EQU 0x00, 0x2f, 0xbc ; 38 
-    CENT_LEN EQU 0x00, 0x36, 0x70 ; 39 
-    CUP_LEN EQU 0x00, 0x2d, 0x3c ; 40 
-    IS_LEN EQU 0x00, 0x23, 0xa6 ; 41 
-    FULL_LEN EQU 0x00, 0x2a, 0xee ; 42 
-    EMPTY_LEN EQU 0x00, 0x46, 0xeb ; 43 
-    bruh_LEN EQU 0x00, 0x18, 0x7c ; 44 
+    ZERO_LEN EQU 0x0039b5 ; 0 
+    ONE_LEN EQU 0x003cd2 ; 1 
+    TWO_LEN EQU 0x0020e5 ; 2 
+    THREE_LEN EQU 0x003274 ; 3 
+    FOUR_LEN EQU 0x003d88 ; 4 
+    FIVE_LEN EQU 0x002b27 ; 5 
+    SIX_LEN EQU 0x0036e9 ; 6 
+    SEVEN_LEN EQU 0x003f1e ; 7 
+    EIGHT_LEN EQU 0x0022ee ; 8 
+    NINE_LEN EQU 0x003afc ; 9 
+    TEN_LEN EQU 0x003921 ; 10 
+    ELEVEN_LEN EQU 0x004563 ; 11 
+    TWELVE_LEN EQU 0x0045a2 ; 12 
+    THIRTEEN_LEN EQU 0x004349 ; 13 
+    FOURTEEN_LEN EQU 0x004d0f ; 14 
+    FIFTEEN_LEN EQU 0x004c6a ; 15 
+    SIXTEEN_LEN EQU 0x004ed9 ; 16 
+    SEVENTEEN_LEN EQU 0x00580a ; 17 
+    EIGHTEEN_LEN EQU 0x003dcc ; 18 
+    NINETEEN_LEN EQU 0x004a14 ; 19 
+    TWENTY_LEN EQU 0x0049ef ; 20 
+    THIRTY_LEN EQU 0x004660 ; 21 
+    FORTY_LEN EQU 0x005013 ; 22 
+    FIFTY_LEN EQU 0x004dad ; 23 
+    SIXTY_LEN EQU 0x0055b1 ; 24 
+    SEVENTY_LEN EQU 0x005ad3 ; 25 
+    EIGHTY_LEN EQU 0x003ff1 ; 26 
+    NINETY_LEN EQU 0x005424 ; 27 
+    HUNDRED_LEN EQU 0x004367 ; 28 
+    POINT_LEN EQU 0x003c5a ; 29 
+    NANO_LEN EQU 0x003ed7 ; 30 
+    MICRO_LEN EQU 0x004b8f ; 31 
+    FARADS_LEN EQU 0x003f80 ; 32 
+    WATER_LEN EQU 0x003834 ; 33 
+    LEVEL_LEN EQU 0x00470e ; 34 
+    CENTI_LEN EQU 0x004d80 ; 35 
+    MILLI_LEN EQU 0x003894 ; 36 
+    METERS_LEN EQU 0x0055dc ; 37 
+    PER_LEN EQU 0x002fbc ; 38 
+    CENT_LEN EQU 0x003670 ; 39 
+    CUP_LEN EQU 0x002d3c ; 40 
+    IS_LEN EQU 0x0023a6 ; 41 
+    FULL_LEN EQU 0x002aee ; 42 
+    EMPTY_LEN EQU 0x0046eb ; 43 
+    ;bruh_LEN EQU 0x00187c ; 44 
 
 FLASH_CE EQU P0.3
 SPEAKER  EQU P2.5
@@ -211,6 +211,44 @@ WelcomeMsg8: db 'B2 to view again', 0
 Clear_Line:  db '                ', 0
 
 
+play_sound mac
+    push acc
+
+    ; clr TR2 ; Stop Timer 2 ISR from playing previous request
+    ; wait for previous sound to finish playing
+    jnb sound_ready, $
+	setb FLASH_CE
+	
+	clr FLASH_CE ; Enable SPI Flash
+	mov a, #READ_BYTES
+	lcall Send_SPI
+	; Get the initial position in memory where to start playing
+	mov a, %0 ; Address bits 16 to 23
+	lcall Send_SPI
+	mov a, %1 ; Address bits 8 to 15
+	lcall Send_SPI
+	mov a, %2 ; Address bits 0 to 7
+	lcall Send_SPI
+	; Get how many bytes to play
+	mov a, %3
+	mov w+2, a
+
+	mov a, %4
+	mov w+1, a
+
+	mov a, %5
+	mov w+0, a
+	
+	mov a, #0x00 ; Request first byte to send to DAC
+	lcall Send_SPI
+	
+    setb SPEAKER
+    clr sound_ready
+    setb sound_playing
+	;setb TR2 ; Start playback by enabling timer 2
+
+    pop acc
+    endmac
 
 ;-------------------------------------;
 ; ISR for Timer 2.  Used to playback  ;
@@ -240,6 +278,11 @@ Inc_Done_1:
 	cjne a, #high(22050), Inc_Done
 
     setb one_second_passed
+
+    clr a 
+
+    mov second_counter+0, a
+    mov second_counter+1, a
 
 Inc_Done:
 
@@ -455,13 +498,13 @@ MainProgram:
 
 	
 forever_loop:
-	;ljmp cap_loop
+	ljmp cap_loop
 	;RI: Receive interrupt flag, set to 1 when the receive FIFO contains data
 	jb RI, serial_get
 	jb P3.7, forever_loop ; Check if push-button pressed
 	jnb P3.7, $ ; Wait for push-button release
 	; Play the whole memory
-	clr TR2 ; Stop Timer 2 ISR from playing previous request
+	;clr TR2 ; Stop Timer 2 ISR from playing previous request
 	setb FLASH_CE
 	clr SPEAKER ; Turn off speaker.
 	
@@ -484,13 +527,13 @@ forever_loop:
 	mov w+0, #0xff
 	
 	setb SPEAKER ; Turn on speaker.
-	setb TR2 ; Start playback by enabling Timer 2
+	;setb TR2 ; Start playback by enabling Timer 2
 	ljmp forever_loop
 	
 serial_get:
 	lcall getchar ; Wait for data to arrive
 	cjne a, #'#', forever_loop ; Message format is #n[data] where 'n' is '0' to '9'
-	clr TR2 ; Stop Timer 2 from playing previous request
+	;clr TR2 ; Stop Timer 2 from playing previous request
 	setb FLASH_CE ; Disable SPI Flash	
 	clr SPEAKER ; Turn off speaker.
 	lcall getchar
@@ -581,7 +624,7 @@ Command_3_skip:
 ;---------------------------------------------------------	
 	cjne a, #'4' , Command_4_skip 
 Command_4_start: ; Playback a portion of the stored wav file
-	clr TR2 ; Stop Timer 2 ISR from playing previous request
+	;clr TR2 ; Stop Timer 2 ISR from playing previous request
 	setb FLASH_CE
 	
 	clr FLASH_CE ; Enable SPI Flash
@@ -605,7 +648,7 @@ Command_4_start: ; Playback a portion of the stored wav file
 	mov a, #0x00 ; Request first byte to send to DAC
 	lcall Send_SPI
 	
-	setb TR2 ; Start playback by enabling timer 2
+	;setb TR2 ; Start playback by enabling timer 2
 	ljmp forever_loop	
 Command_4_skip:
 
@@ -721,23 +764,29 @@ show_again:
     Send_Constant_String_L1(#WelcomeMsg7)
     Send_Constant_String_L2(#WelcomeMsg8)
 
-    mov a, #0x01
-    lcall determine_digit
+    setb TR2
+    mov a, #0x00
+    ;lcall determine_digit
+    ljmp FREQ
 
 forever2:
-    sjmp forever2:
+    sjmp forever2
     ; wait_for_response(show_again)
 
 timer_count:
+    push acc
     ; Measure the frequency applied to pin T0 (T0 is routed to pin P0.0 using the 'crossbar')
     clr TR0 ; Stop counter 0
     mov TL0, #0
     mov TH0, #0
+    clr a
+    mov second_counter+0, a
+    mov second_counter+1, a
     setb TR0 ; Start counter 0
     clr one_second_passed
     jnb one_second_passed, $
     clr TR0 ; Stop counter 0, TH0-TL0 has the frequency
-
+    pop acc
     ret
 
 percentage_loop:
@@ -812,62 +861,31 @@ Cap_uF:
 
 determine_digit:
     push acc
-    cjne a, #0x00, compare_1
-    play_sound(CUP, CUP_LEN)
-    play_sound(IS, IS_LEN)
-    play_sound(EMPTY, EMPTY_LEN)
-
+    cjne a, #0x00, skip_1
+    sjmp play_1
+   
+skip_1:
+	ljmp compare_1
+    
+play_1:
+    play_sound(#high(CUP), #high(CUP*4), #high(CUP*8), #high(CUP_LEN), #high(CUP_LEN*4), #high(CUP_LEN*8))
+    play_sound(#high(IS), #high(IS*4), #high(IS*8), #high(IS_LEN), #high(IS_LEN*4), #high(IS_LEN*8))
+    play_sound(#high(EMPTY), #high(EMPTY*4), #high(EMPTY*8), #high(EMPTY_LEN), #high(EMPTY_LEN*4), #high(EMPTY_LEN*8))
+	
 compare_1:
     cjne a, #0x01, compare_2
-    play_sound(CUP, CUP_LEN)
-    play_sound(IS, IS_LEN)
-    play_sound(ONE, ONE_LEN)
-    play_sound(PER, PER_LEN)
-    play_sound(CENT, CENT_LEN)
-    play_sound(FULL, FULL_LEN)
+   ; play_sound(#CUP, #CUP_LEN)
+    ;play_sound(#IS, #IS_LEN)
+    ;play_sound(#ONE, #ONE_LEN)
+    ;play_sound(#PER, #PER_LEN)
+    ;play_sound(#CENT, #CENT_LEN)
+    ;play_sound(#FULL, #FULL_LEN)
 
 compare_2:
     pop acc
     ret
 
-play_sound mac
-    push acc
 
-    ; clr TR2 ; Stop Timer 2 ISR from playing previous request
-    ; wait for previous sound to finish playing
-    jnb sound_ready, $
-	setb FLASH_CE
-	
-	clr FLASH_CE ; Enable SPI Flash
-	mov a, #READ_BYTES
-	lcall Send_SPI
-	; Get the initial position in memory where to start playing
-	mov a, %0+2 ; Address bits 16 to 23
-	lcall Send_SPI
-	mov a, %0+1 ; Address bits 8 to 15
-	lcall Send_SPI
-	mov a, %0+0 ; Address bits 0 to 7
-	lcall Send_SPI
-	; Get how many bytes to play
-	mov a, %1+2
-	mov w+2, a
-
-	mov a, %1+1
-	mov w+1, a
-
-	mov a, %1+0
-	mov w+0, a
-	
-	mov a, #0x00 ; Request first byte to send to DAC
-	lcall Send_SPI
-	
-    setb SPEAKER
-    clr sound_ready
-    setb sound_playing
-	;setb TR2 ; Start playback by enabling timer 2
-
-    pop acc
-    endmac
 
 
 
