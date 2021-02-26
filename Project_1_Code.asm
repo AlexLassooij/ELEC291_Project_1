@@ -855,7 +855,7 @@ skip_15:
 	ljmp compare_20
 
 play_15:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#FIFTEEN, #FIFTEEN1, #FIFTEEN2, #FIFTEEN_LEN, #FIFTEEN_LEN1, #FIFTEEN_LEN2)
 
 
 compare_20:
@@ -866,7 +866,7 @@ skip_20:
 	ljmp compare_25
 
 play_20:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#TWENTY, #TWENTY1, #TWENTY2, #TWENTY_LEN, #TWENTY_LEN1, #TWENTY_LEN2)
 
 
 compare_25:
@@ -877,7 +877,7 @@ skip_25:
 	ljmp compare_30
 
 play_25:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#TWENTY, #TWENTY1, #TWENTY2, #TWENTY_LEN, #TWENTY_LEN1, #TWENTY_LEN2)
 
 
 compare_30:
@@ -888,7 +888,7 @@ skip_30:
 	ljmp compare_35
 
 play_30:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#THIRTY, #THIRTY1, #THIRTY2, #THIRTY_LEN, #THIRTY_LEN1, #THIRTY_LEN2)
 
 
 compare_35:
@@ -899,7 +899,7 @@ skip_35:
 	ljmp compare_40
 
 play_35:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#THIRTY, #THIRTY1, #THIRTY2, #THIRTY_LEN, #THIRTY_LEN1, #THIRTY_LEN2)
 
 
 compare_40:
@@ -910,7 +910,7 @@ skip_40:
 	ljmp compare_45
 
 play_40:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#FORTY, #FORTY1, #FORTY2, #FORTY_LEN, #FORTY_LEN1, #FORTY_LEN2)
 
 
 compare_45:
@@ -921,7 +921,7 @@ skip_45:
 	ljmp compare_50
 
 play_45:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#FORTY, #FORTY1, #FORTY2, #FORTY_LEN, #FORTY_LEN1, #FORTY_LEN2)
 
 
 compare_50:
@@ -932,7 +932,7 @@ skip_50:
 	ljmp compare_55
 
 play_50:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#FIFTY, #FIFTY1, #FIFTY2, #FIFTY_LEN, #FIFTY_LEN1, #FIFTY_LEN2)
 
 
 compare_55:
@@ -943,7 +943,7 @@ skip_55:
 	ljmp compare_60
 
 play_55:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#FIFTY, #FIFTY1, #FIFTY2, #FIFTY_LEN, #FIFTY_LEN1, #FIFTY_LEN2)
 
 
 compare_60:
@@ -954,7 +954,7 @@ skip_60:
 	ljmp compare_65
 
 play_60:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#SIXTY, #SIXTY1, #SIXTY2, #SIXTY_LEN, #SIXTY_LEN1, #SIXTY_LEN2)
 
 
 compare_65:
@@ -965,7 +965,7 @@ skip_65:
 	ljmp compare_70
 
 play_65:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#SIXTY, #SIXTY1, #SIXTY2, #SIXTY_LEN, #SIXTY_LEN1, #SIXTY_LEN2)
 
 
 compare_70:
@@ -976,7 +976,7 @@ skip_70:
 	ljmp compare_75
 
 play_70:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#SEVENTY, #SEVENTY1, #SEVENTY2, #SEVENTY_LEN, #SEVENTY_LEN1, #SEVENTY_LEN2)
 
 
 compare_75:
@@ -987,7 +987,7 @@ skip_75:
 	ljmp compare_80
 
 play_75:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#SEVENTY, #SEVENTY1, #SEVENTY2, #SEVENTY_LEN, #SEVENTY_LEN1, #SEVENTY_LEN2)
 
 
 compare_80:
@@ -998,7 +998,7 @@ skip_80:
 	ljmp compare_85
 
 play_80:
-	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent(#EIGHTY, #EIGHTY1, #EIGHTY2, #EIGHTY_LEN, #EIGHTY_LEN1, #EIGHTY_LEN2)
 
 
 compare_85:
@@ -1009,7 +1009,7 @@ skip_85:
 	ljmp compare_90
 
 play_85:
-	announce_percent_2(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	announce_percent_2(#EIGHTY, #EIGHTY1, #EIGHTY2, #EIGHTY_LEN, #EIGHTY_LEN1, #EIGHTY_LEN2)
 
 
 compare_90:
@@ -1031,7 +1031,7 @@ skip_95:
 	ljmp compare_full
 
 play_95:
-	announce_percent(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
+	announce_percent_2(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
 
 
 compare_full:
