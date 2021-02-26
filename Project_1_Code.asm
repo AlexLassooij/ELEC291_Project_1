@@ -742,28 +742,6 @@ timer_count:
     pop acc
     ret
 
-percentage_loop:
-    lcall Wait_one_second
-    Send_Constant_String_L1(#Msgpfn)
-    Send_Constant_String_L2(#Clear_Line)
-    lcall timer_count
-    Load_x(1000000000)
-    mov y+0, TL0
-    mov y+1, TH0
-    mov y+2, #0
-    mov y+3, #0
-    lcall div32
-    Load_y(144) ; left shift by 2 decimals
-    lcall mul32
-    ; 1.44 / (Ra+2Rb)*C
-    ; Ra = 9845, Rb = 9840+9830
-    Load_y(492) ; left shift by 2 decimals
-    lcall div32
-    lcall hex2bcd
-    lcall Display_formated_BCD_2
-    ; will format to have to have percent digits in upper 4 bits of bcd+4
-    wait_for_response(calc_percent)
-
 
 FREQ:
     Send_Constant_String_L1(#Msgfreq)
@@ -792,11 +770,6 @@ calc_percent:
     lcall div32
     
 	; 1.8909*x - 1061.3
-
-    mov helper_1+0, x+0
-    mov helper_1+1, x+1
-    mov helper_1+2, x+2
-    mov helper_1+3, x+3
 
 	Load_y(18909)
 	lcall mul32
@@ -828,7 +801,7 @@ Cap_uF:
     lcall div32
     Load_y(144000)
     lcall mul32
-    Load_y(296)
+    Load_y(492)
     lcall div32
     lcall hex2bcd
     lcall Display_unformated_BCD
