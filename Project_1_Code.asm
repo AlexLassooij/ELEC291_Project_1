@@ -49,9 +49,9 @@ F_SCK_MAX      EQU 20000000
 BAUDRATE       EQU 115200
 
 sound_index :
-	ZERO EQU 0x00
+    ZERO EQU 0x00
 	ZERO1 EQU 0x00
-	ZERO2 EQU 0X4d ;0
+	ZERO2 EQU 0x4d ;0
 	ONE EQU 0x00
 	ONE1 EQU 0x3a
 	ONE2 EQU 0x02	;1
@@ -128,7 +128,7 @@ sound_index :
 	SEVENTY1 EQU 0x5a
 	SEVENTY2 EQU 0x38 ; 25 
 	EIGHTY EQU 0x06
-	EIGHTY1 EQU b5
+	EIGHTY1 EQU 0xb5
 	EIGHTY2 EQU 0x0b ; 26 
 	NINETY EQU 0x06
 	NINETY1 EQU 0xf4
@@ -159,7 +159,7 @@ sound_index :
 	CENTI2 EQU 0x09 ; 35 
 	MILLI EQU 0x09
 	MILLI1 EQU 0x5f
-	MILLI2 EQU 0X89 ; 36 
+	MILLI2 EQU 0x89 ; 36 
 	METERS EQU 0x09
 	METERS1 EQU 0x98
 	METERS2 EQU 0x1d ; 37 
@@ -170,8 +170,8 @@ sound_index :
 	CENT1 EQU 0x1d
 	CENT2 EQU 0xb5 ; 39 
 	CUP EQU 0x0a
-	CUP1 EQU 0X54
-	CUP2 EQU 0X25 ; 40 
+	CUP1 EQU 0x54
+	CUP2 EQU 0x25 ; 40 
 	IS EQU 0x0a
 	IS1 EQU 0x81
 	IS2 EQU 0x61 ; 41 
@@ -308,7 +308,7 @@ Size_sound:
 	CENT_LEN1 EQU 0x36
 	CENT_LEN2 EQU 0x70 ; 39 
 	CUP_LEN EQU 0x00
-	CUP_LEN1 EQU 0X2d
+	CUP_LEN1 EQU 0x2d
 	CUP_LEN2 EQU 0x3c ; 40 
 	IS_LEN EQU 0x00
 	IS_LEN1 EQU 0x23
@@ -357,8 +357,6 @@ dseg at 30H
 	w:   ds 3 ; 24-bit play counter.  Decremented in Timer 2 ISR.
 	x:   ds 4
 	y:   ds 4
-	helper_1: ds 4
-	helper_2: ds 4
 	bcd: ds 5
     second_counter: ds 2
 	
@@ -425,6 +423,34 @@ play_sound mac
     clr sound_ready
     setb sound_playing
 	;setb TR2 ; Start playback by enabling timer 2
+
+    pop acc
+    endmac
+
+announce_percent mac
+	push acc
+
+	play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
+    play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
+    play_sound(%0, %1, %2, %3, %4, %5)
+	play_sound(#PER, #PER1, #PER2, #PER_LEN, #PER_LEN1, #PER_LEN2)
+	play_sound(#CENT, #CENT1, #CENT2, #CENT_LEN, #CENT_LEN1, #CENT_LEN2)
+	play_sound(#FULL, #FULL1, #FULL2, #FULL_LEN, #FULL_LEN1, #FULL_LEN2)
+
+    pop acc
+    endmac
+
+announce_percent_2 mac
+
+	push acc
+
+	play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
+    play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
+    play_sound(%0, %1, %2, %3, %4, %5)
+	play_sound(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	play_sound(#PER, #PER1, #PER2, #PER_LEN, #PER_LEN1, #PER_LEN2)
+	play_sound(#CENT, #CENT1, #CENT2, #CENT_LEN, #CENT_LEN1, #CENT_LEN2)
+	play_sound(#FULL, #FULL1, #FULL2, #FULL_LEN, #FULL_LEN1, #FULL_LEN2)
 
     pop acc
     endmac
@@ -675,276 +701,24 @@ MainProgram:
     lcall Init_all ; Initialize the hardware
 	mov SP, #0x7f ; Setup stack pointer to the start of indirectly accessable data memory minus one
 
-	
-forever_loop:
-	ljmp cap_loop
-	;RI: Receive interrupt flag, set to 1 when the receive FIFO contains data
-	jb RI, serial_get
-	jb P3.7, forever_loop ; Check if push-button pressed
-	jnb P3.7, $ ; Wait for push-button release
-	; Play the whole memory
-	;clr TR2 ; Stop Timer 2 ISR from playing previous request
-	setb FLASH_CE
-	clr SPEAKER ; Turn off speaker.
-	
-	clr FLASH_CE ; Enable SPI Flash
-	mov a, #READ_BYTES
-	lcall Send_SPI
-	; Set the initial position in memory where to start playing
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00 ; Request first byte to send to DAC
-	lcall Send_SPI
-	
-	; How many bytes to play? All of them!  Asume 4Mbytes memory: 0x3fffff
-	mov w+2, #0x3f
-	mov w+1, #0xff
-	mov w+0, #0xff
-	
-	setb SPEAKER ; Turn on speaker.
-	;setb TR2 ; Start playback by enabling Timer 2
-	ljmp forever_loop
-	
-serial_get:
-	lcall getchar ; Wait for data to arrive
-	cjne a, #'#', forever_loop ; Message format is #n[data] where 'n' is '0' to '9'
-	;clr TR2 ; Stop Timer 2 from playing previous request
-	setb FLASH_CE ; Disable SPI Flash	
-	clr SPEAKER ; Turn off speaker.
-	lcall getchar
-
-;---------------------------------------------------------	
-	cjne a, #'0' , Command_0_skip
-Command_0_start: ; Identify command
-	clr FLASH_CE ; Enable SPI Flash	
-	mov a, #READ_DEVICE_ID
-	lcall Send_SPI	
-	mov a, #0x55
-	lcall Send_SPI
-	lcall putchar
-	mov a, #0x55
-	lcall Send_SPI
-	lcall putchar
-	mov a, #0x55
-	lcall Send_SPI
-	lcall putchar
-	setb FLASH_CE ; Disable SPI Flash
-	ljmp forever_loop	
-Command_0_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'1' , Command_1_skip 
-Command_1_start: ; Erase whole flash (takes a long time)
-	lcall Enable_Write
-	clr FLASH_CE
-	mov a, #ERASE_ALL
-	lcall Send_SPI
-	setb FLASH_CE
-	lcall Check_WIP
-	mov a, #0x01 ; Send 'I am done' reply
-	lcall putchar		
-	ljmp forever_loop	
-Command_1_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'2' , Command_2_skip 
-Command_2_start: ; Load flash page (256 bytes or less)
-	lcall Enable_Write
-	clr FLASH_CE
-	mov a, #WRITE_BYTES
-	lcall Send_SPI
-	lcall getchar ; Address bits 16 to 23
-	lcall Send_SPI
-	lcall getchar ; Address bits 8 to 15
-	lcall Send_SPI
-	lcall getchar ; Address bits 0 to 7
-	lcall Send_SPI
-	lcall getchar ; Number of bytes to write (0 means 256 bytes)
-	mov r0, a
-Command_2_loop:
-	lcall getchar
-	lcall Send_SPI
-	djnz r0, Command_2_loop
-	setb FLASH_CE
-	lcall Check_WIP
-	mov a, #0x01 ; Send 'I am done' reply
-	lcall putchar		
-	ljmp forever_loop	
-Command_2_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'3' , Command_3_skip 
-Command_3_start: ; Read flash bytes (256 bytes or less)
-	clr FLASH_CE
-	mov a, #READ_BYTES
-	lcall Send_SPI
-	lcall getchar ; Address bits 16 to 23
-	lcall Send_SPI
-	lcall getchar ; Address bits 8 to 15
-	lcall Send_SPI
-	lcall getchar ; Address bits 0 to 7
-	lcall Send_SPI
-	lcall getchar ; Number of bytes to read and send back (0 means 256 bytes)
-	mov r0, a
-
-Command_3_loop:
-	mov a, #0x55
-	lcall Send_SPI
-	lcall putchar
-	djnz r0, Command_3_loop
-	setb FLASH_CE	
-	ljmp forever_loop	
-Command_3_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'4' , Command_4_skip 
-Command_4_start: ; Playback a portion of the stored wav file
-	;clr TR2 ; Stop Timer 2 ISR from playing previous request
-	setb FLASH_CE
-	
-	clr FLASH_CE ; Enable SPI Flash
-	mov a, #READ_BYTES
-	lcall Send_SPI
-	; Get the initial position in memory where to start playing
-	lcall getchar
-	lcall Send_SPI
-	lcall getchar
-	lcall Send_SPI
-	lcall getchar
-	lcall Send_SPI
-	; Get how many bytes to play
-	lcall getchar
-	mov w+2, a
-	lcall getchar
-	mov w+1, a
-	lcall getchar
-	mov w+0, a
-	
-	mov a, #0x00 ; Request first byte to send to DAC
-	lcall Send_SPI
-	
-	;setb TR2 ; Start playback by enabling timer 2
-	ljmp forever_loop	
-Command_4_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'5' , Command_5_skip 
-Command_5_start: ; Calculate and send CRC-16 of ISP flash memory from zero to the 24-bit passed value.
-	; Get how many bytes to use to calculate the CRC.  Store in [r5,r4,r3]
-	lcall getchar
-	mov r5, a
-	lcall getchar
-	mov r4, a
-	lcall getchar
-	mov r3, a
-	
-	; Since we are using the 'djnz' instruction to check, we need to add one to each byte of the counter.
-	; A side effect is that the down counter becomes efectively a 23-bit counter, but that is ok
-	; because the max size of the 25Q32 SPI flash memory is 400000H.
-	inc r3
-	inc r4
-	inc r5
-	
-	; Initial CRC must be zero.
-	mov	SFRPAGE, #0x20 ; UART0, CRC, and SPI can work on this page
-	mov	CRC0CN0, #0b_0000_1000 ; // Initialize hardware CRC result to zero;
-
-	clr FLASH_CE
-	mov a, #READ_BYTES
-	lcall Send_SPI
-	clr a ; Address bits 16 to 23
-	lcall Send_SPI
-	clr a ; Address bits 8 to 15
-	lcall Send_SPI
-	clr a ; Address bits 0 to 7
-	lcall Send_SPI
-	mov	SPI0DAT, a ; Request first byte from SPI flash
-	sjmp Command_5_loop_start
-
-Command_5_loop:
-	jnb SPIF, Command_5_loop 	; Check SPI Transfer Completion Flag
-	clr SPIF				    ; Clear SPI Transfer Completion Flag	
-	mov a, SPI0DAT				; Save received SPI byte to accumulator
-	mov SPI0DAT, a				; Request next byte from SPI flash; while it arrives we calculate the CRC:
-	mov	CRC0IN, a               ; Feed new byte to hardware CRC calculator
-
-Command_5_loop_start:
-	; Drecrement counter:
-	djnz r3, Command_5_loop
-	djnz r4, Command_5_loop
-	djnz r5, Command_5_loop
-Command_5_loop2:	
-	jnb SPIF, Command_5_loop2 	; Check SPI Transfer Completion Flag
-	clr SPIF			    	; Clear SPI Transfer Completion Flag
-	mov a, SPI0DAT	            ; This dummy read is needed otherwise next transfer fails (why?)
-	setb FLASH_CE 				; Done reading from SPI flash
-	
-	; Computation of CRC is complete.  Send 16-bit result using the serial port
-	mov	CRC0CN0, #0x01 ; Set bit to read hardware CRC high byte
-	mov	a, CRC0DAT
-	lcall putchar
-
-	mov	CRC0CN0, #0x00 ; Clear bit to read hardware CRC low byte
-	mov	a, CRC0DAT
-	lcall putchar
-	
-	mov	SFRPAGE, #0x00
-
-	ljmp forever_loop	
-Command_5_skip:
-
-;---------------------------------------------------------	
-	cjne a, #'6' , Command_6_skip 
-Command_6_start: ; Fill flash page (256 bytes)
-	lcall Enable_Write
-	clr FLASH_CE
-	mov a, #WRITE_BYTES
-	lcall Send_SPI
-	lcall getchar ; Address bits 16 to 23
-	lcall Send_SPI
-	lcall getchar ; Address bits 8 to 15
-	lcall Send_SPI
-	lcall getchar ; Address bits 0 to 7
-	lcall Send_SPI
-	lcall getchar ; Byte to write
-	mov r1, a
-	mov r0, #0 ; 256 bytes
-Command_6_loop:
-	mov a, r1
-	lcall Send_SPI
-	djnz r0, Command_6_loop
-	setb FLASH_CE
-	lcall Check_WIP
-	mov a, #0x01 ; Send 'I am done' reply
-	lcall putchar		
-	ljmp forever_loop	
-Command_6_skip:
-
-	ljmp forever_loop
-
-
 cap_loop:
 	clr mode 
 	Send_Constant_String_L1(#WelcomeMsg1)
-    WaitSec(#1)
+    ;WaitSec(#1)
     Send_Constant_String_L2(#WelcomeMsg2)
-    WaitSec(#2)
+    ;WaitSec(#2)
 show_again:
     Send_Constant_String_L1(#WelcomeMsg3)
     Send_Constant_String_L2(#WelcomeMsg4)
-    WaitSec(#2)
+    ;WaitSec(#2)
     Send_Constant_String_L1(#WelcomeMsg5)
     Send_Constant_String_L2(#WelcomeMsg6)
-    WaitSec(#2)
+    ;WaitSec(#2)
     Send_Constant_String_L1(#WelcomeMsg7)
     Send_Constant_String_L2(#WelcomeMsg8)
 
     setb TR2
-    mov a, #0x00
+    mov a, #0x10
     lcall determine_digit
     ;ljmp FREQ
 
@@ -1016,62 +790,10 @@ Cap_nF:
     ; Ra = 9860, Rb = 9860
     Load_y(492) ; left shift by 2 decimals
     lcall div32
-
-	mov helper_1+0, x+0
-    mov helper_1+1, x+1
-    mov helper_1+2, x+2
-    mov helper_1+3, x+3
-	
-	mov y+0, x+0
-    mov y+1, x+1
-    mov y+2, x+2
-    mov y+3, x+3
-	; compute x^2
-	lcall mul32
-	;keep track of how many zeros to shift back (4)
-	Load_y(44)
-	lcall mul32 ; 44*x^2
-	Load_y(10000)
-	lcall div32 ;0.0044*x^2
-
-	mov helper_2+0, x+0
-    mov helper_2+1, x+1
-    mov helper_2+2, x+2
-    mov helper_2+3, x+3
-
-	;helper_2 contains 0.0044*x^2
-
-	mov x+0, helper_1+0
-    mov x+1, helper_1+1
-    mov x+2, helper_1+2
-    mov x+3, helper_1+3
-
-	Load_y(1204) ; total zeros : 3
-
-	lcall mul32
-
-	Load_y(1000)
-
-	lcall div32 ; 1.204*x in x currently
-
-	mov y+0, helper_2+0
-    mov y+1, helper_2+1
-    mov y+2, helper_2+2
-    mov y+3, helper_2+3
-
-    lcall add32 ;0.0044x^2 + 1.204x
-    Load_y(10)
-	lcall div32 ;(0.0044x^2 + 1.204x)/10
-	Load_y(25)
-	lcall mul32 ; (0.0044x^2 + 1.204x)/2.5
-	Load_y(1)
-    lcall add32
-    
     lcall hex2bcd
     lcall Display_formated_BCD_2
     wait_for_response(Cap_nF)
 
-; 0.0044x^2 + 1.2038x +2.3857
 Cap_uF:
     Send_Constant_String_L1(#Msgcapu)
     Send_Constant_String_L2(#Clear_Line)
@@ -1092,30 +814,239 @@ Cap_uF:
 
 determine_digit:
     push acc
-    cjne a, #0x00, skip_1
-    sjmp play_1
+    cjne a, #0x00, skip_empty
+    sjmp play_empty
    
-skip_1:
-	ljmp compare_1
+skip_empty:
+	ljmp compare_5
     
-play_1:
+play_empty:
     play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
     play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
     play_sound(#EMPTY, #EMPTY1, #EMPTY2, #EMPTY_LEN, #EMPTY_LEN1, #EMPTY_LEN2)
 
-compare_1:
-    cjne a, #0x01, compare_2
-    ;play_sound(#CUP, #CUP_LEN)
-    ;play_sound(#IS, #IS_LEN)
-    ;play_sound(#ONE, #ONE_LEN)
-    ;play_sound(#PER, #PER_LEN)
-    ;play_sound(#CENT, #CENT_LEN)
-    ;play_sound(#FULL, #FULL_LEN)
+compare_5:
+    cjne a, #0x05, skip_5
+	sjmp play_5
+   
+skip_5:
+	ljmp compare_10
 
-compare_2:
-    pop acc
-    ret
+play_5:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
 
+
+compare_10:
+    cjne a, #0x0A, skip_10
+	sjmp play_10
+   
+skip_10:
+	ljmp compare_15
+
+play_10:
+	announce_percent(#TEN, #TEN1, #TEN2, #TEN_LEN, #TEN_LEN1, #TEN_LEN2)
+
+
+compare_15:
+    cjne a, #0x0F, skip_15
+	sjmp play_15
+   
+skip_15:
+	ljmp compare_20
+
+play_15:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_20:
+    cjne a, #0x20, skip_20
+	sjmp play_20
+   
+skip_20:
+	ljmp compare_25
+
+play_20:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_25:
+    cjne a, #0x25, skip_25
+	sjmp play_25
+   
+skip_25:
+	ljmp compare_30
+
+play_25:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_30:
+    cjne a, #0x30, skip_30
+	sjmp play_30
+   
+skip_30:
+	ljmp compare_35
+
+play_30:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_35:
+    cjne a, #0x35, skip_35
+	sjmp play_35
+   
+skip_35:
+	ljmp compare_40
+
+play_35:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_40:
+    cjne a, #0x40, skip_40
+	sjmp play_40
+   
+skip_40:
+	ljmp compare_45
+
+play_40:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_45:
+    cjne a, #0x45, skip_45
+	sjmp play_45
+   
+skip_45:
+	ljmp compare_50
+
+play_45:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_50:
+    cjne a, #0x50, skip_50
+	sjmp play_50
+   
+skip_50:
+	ljmp compare_55
+
+play_50:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_55:
+    cjne a, #0x55, skip_55
+	sjmp play_55
+   
+skip_55:
+	ljmp compare_60
+
+play_55:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_60:
+    cjne a, #0x60, skip_60
+	sjmp play_60
+   
+skip_60:
+	ljmp compare_65
+
+play_60:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_65:
+    cjne a, #0x65, skip_65
+	sjmp play_65
+   
+skip_65:
+	ljmp compare_70
+
+play_65:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_70:
+    cjne a, #0x70, skip_70
+	sjmp play_70
+   
+skip_70:
+	ljmp compare_75
+
+play_70:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_75:
+    cjne a, #0x75, skip_75
+	sjmp play_75
+   
+skip_75:
+	ljmp compare_80
+
+play_75:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_80:
+    cjne a, #0x80, skip_80
+	sjmp play_80
+   
+skip_80:
+	ljmp compare_85
+
+play_80:
+	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_85:
+    cjne a, #0x85, skip_85
+	sjmp play_85
+   
+skip_85:
+	ljmp compare_90
+
+play_85:
+	announce_percent_2(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+
+compare_90:
+    cjne a, #0x90, skip_90
+	sjmp play_90
+   
+skip_90:
+	ljmp compare_95
+
+play_90:
+	announce_percent(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
+
+
+compare_95:
+    cjne a, #0x95, skip_96
+	sjmp play_95
+   
+skip_95:
+	ljmp compare_full
+
+play_95:
+	announce_percent(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
+
+
+compare_full:
+    cjne a, #00, skip_full
+	sjmp play_full
+   
+skip_full:
+	ljmp return_determine
+
+play_full:
+	announce_percent(#FULL, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+
+return_determine:
+	pop acc
+	ret
 
 
 
