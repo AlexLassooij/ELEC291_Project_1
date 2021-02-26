@@ -107,7 +107,7 @@ sound_index :
 	EIGHTEEN1 EQU 0x4e
 	EIGHTEEN2 EQU 0x98 ; 18 
 	NINETEEN EQU 0x04
-	NINETEEN EQU 0x8c
+	NINETEEN1 EQU 0x8c
 	NINETEEN2 EQU 0x64 ; 19 
 	TWENTY EQU 0x04
 	TWENTY1 EQU 0xd6
@@ -228,7 +228,7 @@ Size_sound:
 	TWELVE_LEN2 EQU 0xa2 ; 12 
 	THIRTEEN_LEN EQU 0x00
 	THIRTEEN_LEN1 EQU 0x43
-	THIRTEEN _LEN2 EQU 0x49 ; 13 
+	THIRTEEN_LEN2 EQU 0x49 ; 13 
 	FOURTEEN_LEN EQU 0x00
 	FOURTEEN_LEN1 EQU 0x4d
 	FOURTEEN_LEN2 EQU 0x0f ; 14 
@@ -243,7 +243,7 @@ Size_sound:
 	SEVENTEEN_LEN2 EQU 0x0a ; 17 
 	EIGHTEEN_LEN EQU 0x00
 	EIGHTEEN_LEN1 EQU 0x3d
-	EIGHTEEN _LEN2 EQU 0xcc ; 18 
+	EIGHTEEN_LEN2 EQU 0xcc ; 18 
 	NINETEEN_LEN EQU 0x00
 	NINETEEN_LEN1 EQU 0x4a
 	NINETEEN_LEN2 EQU 0x14 ; 19 
@@ -269,8 +269,8 @@ Size_sound:
 	EIGHTY_LEN1 EQU 0x3f
 	EIGHTY_LEN2 EQU 0xf1 ; 26 
 	NINETY_LEN EQU 0x00
-	NIENTY_LEN1 EQU 0x54
-	NIENTY_LEN2 EQU 0x24 ; 27 
+	NINETY_LEN1 EQU 0x54
+	NINETY_LEN2 EQU 0x24 ; 27 
 	HUNDRED_LEN EQU 0x00
 	HUNDRED_LEN1 EQU 0x43
 	HUNDRED_LEN2 EQU 0x67 ; 28 
@@ -323,7 +323,7 @@ Size_sound:
 
 
 FLASH_CE EQU P0.3
-SPEAKER  EQU P2.5
+SPEAKER  EQU P1.3
 
 AUTO            equ P2.1
 ONREQ           equ P2.4
@@ -375,8 +375,8 @@ $LIST
 cseg
 
 Msgfreq:     db 'Frequency   (Hz)', 0
-Msgpfn:     db 'Capacitance (pF)', 0
-Msgcapu:     db 'Capacitance (uF)', 0
+Msgpfn:      db 'Capacitance (pF)', 0
+Msgpercent:  db 'Percentage   (%)', 0
 WelcomeMsg1: db '     Welcome    ', 0
 WelcomeMsg2: db 'Choose an Option', 0
 WelcomeMsg3: db 'B1: Auto Recalc ', 0
@@ -718,7 +718,7 @@ show_again:
     Send_Constant_String_L2(#WelcomeMsg8)
 
     setb TR2
-    mov a, #0x10
+    mov a, #0x00
     lcall determine_digit
     ;ljmp FREQ
 
@@ -762,7 +762,7 @@ percentage_loop:
     lcall hex2bcd
     lcall Display_formated_BCD_2
     ; will format to have to have percent digits in upper 4 bits of bcd+4
-    wait_for_response(Cap_nF)
+    wait_for_response(calc_percent)
 
 
 FREQ:
@@ -774,8 +774,8 @@ FREQ:
     lcall DisplayBCD_5
     wait_for_response(FREQ)
 	
-Cap_nF:
-    Send_Constant_String_L1(#Msgpfn)
+calc_percent:
+    Send_Constant_String_L1(#Msgpercent)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
     Load_x(1000000000)
@@ -792,24 +792,24 @@ Cap_nF:
     lcall div32
     lcall hex2bcd
     lcall Display_formated_BCD_2
-    wait_for_response(Cap_nF)
+    wait_for_response(calc_percent)
 
 Cap_uF:
-    Send_Constant_String_L1(#Msgcapu)
+    Send_Constant_String_L1(#Msgpfn)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
-    Load_x(1000000) ; 
+    Load_x(1000000000) ; 
     mov y+0, TL0
     mov y+1, TH0
     mov y+2, #0
     mov y+3, #0
     lcall div32
-    Load_y(144)
+    Load_y(144000)
     lcall mul32
     Load_y(296)
     lcall div32
     lcall hex2bcd
-    lcall Display_formated_BCD_2
+    lcall Display_unformated_BCD
     wait_for_response(Cap_uF)
 
 determine_digit:
@@ -837,7 +837,7 @@ play_5:
 
 
 compare_10:
-    cjne a, #0x0A, skip_10
+    cjne a, #0x00, skip_10
 	sjmp play_10
    
 skip_10:
@@ -848,7 +848,7 @@ play_10:
 
 
 compare_15:
-    cjne a, #0x0F, skip_15
+    cjne a, #0x00, skip_15
 	sjmp play_15
    
 skip_15:
@@ -1024,7 +1024,7 @@ play_90:
 
 
 compare_95:
-    cjne a, #0x95, skip_96
+    cjne a, #0x95, skip_95
 	sjmp play_95
    
 skip_95:
@@ -1042,7 +1042,9 @@ skip_full:
 	ljmp return_determine
 
 play_full:
-	announce_percent(#FULL, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
+	play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
+    play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
+    play_sound(#FULL, #FULL1, #FULL2, #FULL_LEN, #FULL_LEN1, #FULL_LEN2)
 
 return_determine:
 	pop acc
