@@ -719,8 +719,8 @@ show_again:
 
     setb TR2
     mov a, #0x00
-    lcall determine_digit
-    ;ljmp FREQ
+    ;lcall determine_digit
+    ljmp calc_percent
 
 forever2:
     sjmp forever2
@@ -790,8 +790,61 @@ calc_percent:
     ; Ra = 9860, Rb = 9860
     Load_y(492) ; left shift by 2 decimals
     lcall div32
+    
+    Load_y(1000)
+    lcall div32
+
+    mov helper_1+0, x+0
+    mov helper_1+1, x+1
+    mov helper_1+2, x+2
+    mov helper_1+3, x+3
+	
+	mov y+0, x+0
+    mov y+1, x+1
+    mov y+2, x+2
+    mov y+3, x+3
+	; compute x^2
+	lcall mul32
+	;keep track of how many zeros to shift back (4)
+	Load_y(44)
+	lcall mul32 ; 44*x^2
+	Load_y(10000)
+	lcall div32 ;0.0044*x^2
+	mov helper_2+0, x+0
+    mov helper_2+1, x+1
+    mov helper_2+2, x+2
+    mov helper_2+3, x+3
+
+	;helper_2 contains 0.0044*x^2
+
+	mov x+0, helper_1+0
+    mov x+1, helper_1+1
+    mov x+2, helper_1+2
+    mov x+3, helper_1+3
+
+	Load_y(1204) ; total zeros : 3
+
+	lcall mul32
+
+	Load_y(1000)
+
+	lcall div32 ; 1.204*x in x currently
+
+	mov y+0, helper_2+0
+    mov y+1, helper_2+1
+    mov y+2, helper_2+2
+    mov y+3, helper_2+3
+
+    lcall add32 ;0.0044x^2 + 1.204x
+    Load_y(10)
+	lcall div32 ;(0.0044x^2 + 1.204x)/10
+	Load_y(25)
+	lcall mul32 ; (0.0044x^2 + 1.204x)/2.5
+	Load_y(1)
+    lcall add32
+    
     lcall hex2bcd
-    lcall Display_formated_BCD_2
+    lcall Display_unformated_BCD
     wait_for_response(calc_percent)
 
 Cap_uF:
