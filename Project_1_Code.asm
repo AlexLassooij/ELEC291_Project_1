@@ -359,6 +359,9 @@ dseg at 30H
 	y:   ds 4
 	bcd: ds 5
     second_counter: ds 2
+	helper_1: ds 4
+	helper_2: ds 4
+
 	
 BSEG
 mf: 	dbit 1
@@ -377,6 +380,7 @@ cseg
 Msgfreq:     db 'Frequency   (Hz)', 0
 Msgpfn:      db 'Capacitance (pF)', 0
 Msgpercent:  db 'Percentage   (%)', 0
+Msgpercent2: db 'Percentage2     ', 0
 WelcomeMsg1: db '     Welcome    ', 0
 WelcomeMsg2: db 'Choose an Option', 0
 WelcomeMsg3: db 'B1: Auto Recalc ', 0
@@ -769,22 +773,91 @@ calc_percent:
     Load_y(492) ; left shift by 2 decimals
     lcall div32
     
-	; 1.8909*x - 1061.3
-
-	Load_y(18909)
-	lcall mul32
-
+	; 0.756x-425
 	Load_y(10000)
 	lcall div32
-
-	Load_y(1061)
-	lcall sub32
-
-	Load_y(25)
-	lcall div32
-	Load_y(10)
-	lcall mul32
 	
+	Load_y(756)
+	lcall mul32
+
+	Load_y(1000)
+	lcall div32
+
+	Load_y(425)
+	lcall sub32
+	
+    lcall hex2bcd
+    lcall Display_unformated_BCD
+    wait_for_response(calc_percent)
+
+calc_2:
+	Send_Constant_String_L1(#Msgpercent2)
+    Send_Constant_String_L2(#Clear_Line)
+    lcall timer_count
+    Load_x(1000000000)
+    mov y+0, TL0
+    mov y+1, TH0
+    mov y+2, #0
+    mov y+3, #0
+    lcall div32
+    Load_y(144000) ; left shift by 2 decimals
+    lcall mul32
+    ; 1.44 / (Ra+2Rb)*C
+    ; Ra = 9860, Rb = 9860
+    Load_y(492) ; left shift by 2 decimals
+    lcall div32
+    
+    Load_y(10000)
+    lcall div32
+	;269 -1.45x + 0.00175Ex^2
+    mov helper_1+0, x+0
+    mov helper_1+1, x+1
+    mov helper_1+2, x+2
+    mov helper_1+3, x+3
+	
+	Load_y(145) ; total zeros : 3
+	lcall mul32
+
+	Load_y(10)
+	lcall div32 ; 14.5*x in x currently
+
+	mov helper_2+0, x+0
+    mov helper_2+1, x+1
+    mov helper_2+2, x+2
+    mov helper_2+3, x+3
+
+	;helper_2 contains 14.5x
+
+	mov x+0, helper_1+0
+    mov x+1, helper_1+1
+    mov x+2, helper_1+2
+    mov x+3, helper_1+3
+
+	mov y+0, x+0
+    mov y+1, x+1
+    mov y+2, x+2
+    mov y+3, x+3
+	; compute x^2
+	lcall mul32
+	;keep track of how many zeros to shift back (4)
+	Load_y(175)
+	lcall mul32 
+	Load_y(10000)
+	lcall div32 
+
+	mov y+0, helper_2+0
+    mov y+1, helper_2+1
+    mov y+2, helper_2+2
+    mov y+3, helper_2+3
+
+    lcall sub32 ;0.0044x^2 + 1.204x
+    
+	Load_y(2690)
+    lcall add32
+    
+	Load_y(10)
+	lcall div32 
+
     lcall hex2bcd
     lcall Display_unformated_BCD
     wait_for_response(calc_percent)
@@ -806,6 +879,55 @@ Cap_uF:
     lcall hex2bcd
     lcall Display_unformated_BCD
     wait_for_response(Cap_uF)
+
+rounder:
+
+    push acc
+    push AR0
+    push AR1
+
+    mov R0, a
+    mov R1, a
+
+    swap R1 
+
+    anl R1, #0x0F ; R1 holds bits of left BCD digit
+
+    anl R0, #0x0F ; R0 hold bits of right BCD digit
+
+    mov a, R0
+    
+    jb acc.3, round_5
+    jb acc.4, round_10
+    cjne a, #0x00, round_0
+    cjne a, #0x01, round_0
+    cjne a, #0x02, round_0
+    sjmp round_5 ; last case: 3 --> round up to 5
+
+	round_0:
+        mov a, #0x00
+        swap R1
+        orl a, R1
+        sjmp rounder_ret
+
+	round_5:
+        mov a, #0x05
+        swap R1
+        orl a, R1
+        sjmp rounder_ret
+
+    round_10:
+        mov, a #0x00 
+        inc R1 
+        swap R1 
+        orl a, R1 
+        sjmp rounder_ret
+
+    rounder_ret:
+        pop acc
+        pop AR0
+        pop AR1
+        ret
 
 determine_digit:
     push acc
