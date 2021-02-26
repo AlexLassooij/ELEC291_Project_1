@@ -361,6 +361,9 @@ dseg at 30H
     second_counter: ds 2
 	helper_1: ds 4
 	helper_2: ds 4
+    helper_3: ds 1
+	helper_4: ds 1
+
 
 	
 BSEG
@@ -747,14 +750,14 @@ timer_count:
     ret
 
 
-FREQ:
-    Send_Constant_String_L1(#Msgfreq)
-    Send_Constant_String_L2(#Clear_Line)
-    lcall timer_count
-    Set_Cursor(2, 1)
-    lcall hex2bcd_5
-    lcall DisplayBCD_5
-    wait_for_response(FREQ)
+;calc_2:
+   ; Send_Constant_String_L1(#Msgfreq)
+    ;Send_Constant_String_L2(#Clear_Line)
+    ;lcall timer_count
+    ;Set_Cursor(2, 1)
+    ;lcall hex2bcd_5
+    ;lcall DisplayBCD_5
+    ;wait_for_response(calc_2)
 	
 calc_percent:
     Send_Constant_String_L1(#Msgpercent)
@@ -855,14 +858,14 @@ calc_2:
 	Load_y(2690)
     lcall add32
     
-	Load_y(10)
+	Load_y(9)
 	lcall div32 
 
     lcall hex2bcd
     lcall Display_unformated_BCD
-    wait_for_response(calc_percent)
+    wait_for_response(calc_2)
 
-Cap_uF:
+cap_pf:
     Send_Constant_String_L1(#Msgpfn)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
@@ -878,24 +881,23 @@ Cap_uF:
     lcall div32
     lcall hex2bcd
     lcall Display_unformated_BCD
-    wait_for_response(Cap_uF)
+    wait_for_response(cap_pf)
 
 rounder:
 
     push acc
-    push AR0
-    push AR1
 
-    mov R0, a
-    mov R1, a
+    mov helper_3, a
+    swap a
+    mov helper_4, a
 
-    swap R1 
+    
 
-    anl R1, #0x0F ; R1 holds bits of left BCD digit
+    anl helper_4, #0x0F ; 4 holds bits of left BCD digit
 
-    anl R0, #0x0F ; R0 hold bits of right BCD digit
+    anl helper_3, #0x0F ; 3 hold bits of right BCD digit
 
-    mov a, R0
+    mov a, helper_3
     
     jb acc.3, round_5
     jb acc.4, round_10
@@ -905,22 +907,20 @@ rounder:
     sjmp round_5 ; last case: 3 --> round up to 5
 
 	round_0:
-        mov a, #0x00
-        swap R1
-        orl a, R1
+        mov a, helper_4
+        swap a
         sjmp rounder_ret
 
 	round_5:
-        mov a, #0x05
-        swap R1
-        orl a, R1
+        mov a, helper_4
+        swap a
+        orl a, #0x05
         sjmp rounder_ret
 
     round_10:
-        mov, a #0x00 
-        inc R1 
-        swap R1 
-        orl a, R1 
+        mov a, helper_4 
+        inc a
+        swap a
         sjmp rounder_ret
 
     rounder_ret:
