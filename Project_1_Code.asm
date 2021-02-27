@@ -383,8 +383,8 @@ cseg
 
 Msgfreq:     db 'Frequency   (Hz)', 0
 Msgpfn:      db 'Capacitance (pF)', 0
-Msgpercent:  db 'Percentage   (%)', 0
-Msgpercent2: db 'Percentage2     ', 0
+Msgpercent:  db 'Percentage   lin', 0
+Msgpercent2: db 'Percentage   (%)', 0
 WelcomeMsg1: db '     Welcome    ', 0
 WelcomeMsg2: db 'Choose an Option', 0
 WelcomeMsg3: db 'B1: Auto Recalc ', 0
@@ -862,18 +862,22 @@ calc_quad:
 	lcall div32 
 
     lcall hex2bcd
-    lcall Display_unformated_BCD
+
 
 	mov a, bcd+1
 	anl a, #0x0F
 	cjne a, #0x01, not_hundred        
-	setb hundred_flag                    
+	setb hundred_flag 
+    sjmp is_hundred                   
 not_hundred: 
+    clr hundred_flag
+is_hundred:
 	mov a, bcd+0
 	lcall rounder
+    mov bcd+0, a
 	lcall determine_digit
-
-    wait_for_response(calc_2)
+    lcall Display_unformated_BCD
+    wait_for_response(calc_quad)
 
 cap_pf:
     Send_Constant_String_L1(#Msgpfn)
@@ -895,16 +899,11 @@ cap_pf:
 
 rounder:
 
-    push acc
-
     mov helper_3, a
     swap a
     mov helper_4, a
 
-    
-
     anl helper_4, #0x0F ; 4 holds bits of left BCD digit
-
     anl helper_3, #0x0F ; 3 hold bits of right BCD digit
 
     mov a, helper_3
@@ -934,7 +933,6 @@ rounder:
         sjmp rounder_ret
 
     rounder_ret:
-        pop acc
         ret
 
 determine_digit:
@@ -952,6 +950,7 @@ play_empty:
     play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
     play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
     play_sound(#EMPTY, #EMPTY1, #EMPTY2, #EMPTY_LEN, #EMPTY_LEN1, #EMPTY_LEN2)
+    ljmp return_determine
 
 compare_5:
     cjne a, #0x05, skip_5
@@ -962,7 +961,7 @@ skip_5:
 
 play_5:
 	announce_percent(#FIVE, #FIVE1, #FIVE2, #FIVE_LEN, #FIVE_LEN1, #FIVE_LEN2)
-
+    ljmp return_determine
 
 compare_10:
     cjne a, #0x00, skip_10
@@ -973,7 +972,7 @@ skip_10:
 
 play_10:
 	announce_percent(#TEN, #TEN1, #TEN2, #TEN_LEN, #TEN_LEN1, #TEN_LEN2)
-
+    ljmp return_determine
 
 compare_15:
     cjne a, #0x00, skip_15
@@ -984,7 +983,7 @@ skip_15:
 
 play_15:
 	announce_percent(#FIFTEEN, #FIFTEEN1, #FIFTEEN2, #FIFTEEN_LEN, #FIFTEEN_LEN1, #FIFTEEN_LEN2)
-
+    ljmp return_determine
 
 compare_20:
     cjne a, #0x20, skip_20
@@ -995,7 +994,7 @@ skip_20:
 
 play_20:
 	announce_percent(#TWENTY, #TWENTY1, #TWENTY2, #TWENTY_LEN, #TWENTY_LEN1, #TWENTY_LEN2)
-
+    ljmp return_determine
 
 compare_25:
     cjne a, #0x25, skip_25
@@ -1006,7 +1005,7 @@ skip_25:
 
 play_25:
 	announce_percent_2(#TWENTY, #TWENTY1, #TWENTY2, #TWENTY_LEN, #TWENTY_LEN1, #TWENTY_LEN2)
-
+    ljmp return_determine
 
 compare_30:
     cjne a, #0x30, skip_30
@@ -1017,7 +1016,7 @@ skip_30:
 
 play_30:
 	announce_percent(#THIRTY, #THIRTY1, #THIRTY2, #THIRTY_LEN, #THIRTY_LEN1, #THIRTY_LEN2)
-
+    ljmp return_determine
 
 compare_35:
     cjne a, #0x35, skip_35
@@ -1028,7 +1027,7 @@ skip_35:
 
 play_35:
 	announce_percent_2(#THIRTY, #THIRTY1, #THIRTY2, #THIRTY_LEN, #THIRTY_LEN1, #THIRTY_LEN2)
-
+    ljmp return_determine
 
 compare_40:
     cjne a, #0x40, skip_40
@@ -1039,7 +1038,7 @@ skip_40:
 
 play_40:
 	announce_percent(#FORTY, #FORTY1, #FORTY2, #FORTY_LEN, #FORTY_LEN1, #FORTY_LEN2)
-
+    ljmp return_determine
 
 compare_45:
     cjne a, #0x45, skip_45
@@ -1050,7 +1049,7 @@ skip_45:
 
 play_45:
 	announce_percent_2(#FORTY, #FORTY1, #FORTY2, #FORTY_LEN, #FORTY_LEN1, #FORTY_LEN2)
-
+    ljmp return_determine
 
 compare_50:
     cjne a, #0x50, skip_50
@@ -1061,7 +1060,7 @@ skip_50:
 
 play_50:
 	announce_percent(#FIFTY, #FIFTY1, #FIFTY2, #FIFTY_LEN, #FIFTY_LEN1, #FIFTY_LEN2)
-
+    ljmp return_determine
 
 compare_55:
     cjne a, #0x55, skip_55
@@ -1072,7 +1071,7 @@ skip_55:
 
 play_55:
 	announce_percent_2(#FIFTY, #FIFTY1, #FIFTY2, #FIFTY_LEN, #FIFTY_LEN1, #FIFTY_LEN2)
-
+    ljmp return_determine
 
 compare_60:
     cjne a, #0x60, skip_60
@@ -1083,7 +1082,7 @@ skip_60:
 
 play_60:
 	announce_percent(#SIXTY, #SIXTY1, #SIXTY2, #SIXTY_LEN, #SIXTY_LEN1, #SIXTY_LEN2)
-
+    ljmp return_determine
 
 compare_65:
     cjne a, #0x65, skip_65
@@ -1094,7 +1093,7 @@ skip_65:
 
 play_65:
 	announce_percent_2(#SIXTY, #SIXTY1, #SIXTY2, #SIXTY_LEN, #SIXTY_LEN1, #SIXTY_LEN2)
-
+    ljmp return_determine
 
 compare_70:
     cjne a, #0x70, skip_70
@@ -1105,7 +1104,7 @@ skip_70:
 
 play_70:
 	announce_percent(#SEVENTY, #SEVENTY1, #SEVENTY2, #SEVENTY_LEN, #SEVENTY_LEN1, #SEVENTY_LEN2)
-
+    ljmp return_determine
 
 compare_75:
     cjne a, #0x75, skip_75
@@ -1116,7 +1115,7 @@ skip_75:
 
 play_75:
 	announce_percent_2(#SEVENTY, #SEVENTY1, #SEVENTY2, #SEVENTY_LEN, #SEVENTY_LEN1, #SEVENTY_LEN2)
-
+    ljmp return_determine
 
 compare_80:
     cjne a, #0x80, skip_80
@@ -1127,7 +1126,7 @@ skip_80:
 
 play_80:
 	announce_percent(#EIGHTY, #EIGHTY1, #EIGHTY2, #EIGHTY_LEN, #EIGHTY_LEN1, #EIGHTY_LEN2)
-
+    ljmp return_determine
 
 compare_85:
     cjne a, #0x85, skip_85
@@ -1138,7 +1137,7 @@ skip_85:
 
 play_85:
 	announce_percent_2(#EIGHTY, #EIGHTY1, #EIGHTY2, #EIGHTY_LEN, #EIGHTY_LEN1, #EIGHTY_LEN2)
-
+    ljmp return_determine
 
 compare_90:
     cjne a, #0x90, skip_90
@@ -1149,7 +1148,7 @@ skip_90:
 
 play_90:
 	announce_percent(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
-
+    ljmp return_determine
 
 compare_95:
     cjne a, #0x95, skip_95
@@ -1160,10 +1159,11 @@ skip_95:
 
 play_95:
 	announce_percent_2(#NINETY, #NINETY1, #NINETY2, #NINETY_LEN, #NINETY_LEN1, #NINETY_LEN2)
-
+    ljmp return_determine
 
 compare_full:
-    cjne a, #00, skip_full
+    jnb hundred_flag, skip_full
+    cjne a, #0x00, skip_full
 	sjmp play_full
    
 skip_full:
