@@ -257,6 +257,15 @@ skip_blank_format:
 	Display_BCD(bcd+0)
 	ret
 
+Display_unformated_BCD:
+	Set_Cursor(2, 1)
+	Display_BCD(bcd+4)
+	Display_BCD(bcd+3)
+	Display_BCD(bcd+2)
+	Display_BCD(bcd+1)
+	Display_BCD(bcd+0)
+	ret
+
 ;Converts the hex number in TH0-TL0 to packed BCD in R2-R1-R0
 hex2bcd_5:
 	clr a
@@ -368,37 +377,27 @@ X1: djnz R0, X1 ; 3 machine cycles -> 3*40.81633ns*167=20.44898us (see table 10.
 wait_for_response mac
 response_loop_%M:
 	jb ONREQ, frequency_response_%M ; loop while the button is not pressed
-	Wait_Milli_Seconds(#50) ; debounce time
-	jb ONREQ, frequency_response_%M ; it was a bounce, try again
 	jnb ONREQ, $ ; loop while the button is pressed
     clr mode
     ljmp %0
 
 frequency_response_%M:
     jb CAL_freq, nF_response_%M 
-	Wait_Milli_Seconds(#50) 
-	jb CAL_freq, nF_response_%M 
 	jnb CAL_freq, $ 
-    ljmp FREQ
+    ljmp calc_quad
 
 nF_response_%M:
     jb CAL_nF, uF_response_%M 
-	Wait_Milli_Seconds(#50) 
-	jb CAL_nF, uF_response_%M 
 	jnb CAL_nF, $ 
-    ljmp Cap_nF
+    ljmp calc_percent
 
 uF_response_%M:
     jb CAL_uF, auto_recal_%M 
-	Wait_Milli_Seconds(#50) 
-	jb CAL_uF, auto_recal_%M 
 	jnb CAL_uF, $ 
-    ljmp Cap_uF
+    ljmp cap_pf
 
 auto_recal_%M:
     jb AUTO, eval_en_%M 
-	Wait_Milli_Seconds(#50) 
-	jb AUTO, eval_en_%M 
 	jnb AUTO, $ 
     setb mode
     ljmp %0
