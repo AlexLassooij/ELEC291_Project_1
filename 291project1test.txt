@@ -1,0 +1,11 @@
+//===================================================================================//
+Project 1 Demo : Water Level Detector
+//===================================================================================//
+Group Members:
+ - Alex Lassooij		Student ID :38574752
+ - Scott Jiang			Student ID :78882545
+ - Christophorus Hansen		Student ID :10984375
+//===================================================================================//
+This submission includes Project_1_Code.asm as the main code as well as our 
+demonstration video of the project
+//===================================================================================//
