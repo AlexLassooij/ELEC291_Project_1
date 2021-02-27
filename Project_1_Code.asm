@@ -189,21 +189,22 @@ sound_index :
 	EMPTY1 EQU 0xcf
 	EMPTY2 EQU 0xfd ; 43  
 
-	BOTTLE EQU 0x0a
-	BOTTLE1 EQU 0xf7
-	BOTTLE2 EQU 0x2a ;44
+	BOTTLE EQU 0x0b
+	BOTTLE1 EQU 0x1f
+	BOTTLE2 EQU 0x4a ;44
 
 	ALIGNED0 EQU 0x0b
-	ALIGNED1 EQU 0x1f
-	ALIGNED2 EQU 0x41 ;45
+	ALIGNED1 EQU 0x6f
+	ALIGNED2 EQU 0xb0 ;45
 
 	SECOND EQU 0x0b
-	SECOND1 EQU 0x6f
-	SECOND2 EQU 0xb0 ;46
+	SECOND1 EQU 0xbf
+	SECOND2 EQU 0xb4 ;46
 
-	NOT0 EQU 0x0b
-	NOT1 EQU 0xbf
-	NOT2 EQU 0xb4 ;47
+	NOT0 EQU 0x0c
+	NOT1 EQU 0x00
+	NOT2 EQU 0xdd ;47
+
 	;bruh1 EQU 0x0b16e0 ; 44 
 	;bruh2 EQU 0x0b2f5c :
 
@@ -387,20 +388,20 @@ Size_sound:
 	EMPTY_LEN2 EQU 0x2d ; 43 
 
 	BOTTLE_LEN EQU 0x00
-	BOTTLE_LEN1 EQU 0x28
-	BOTTLE_LEN2 EQU 0x20 ;44
+	BOTTLE_LEN1 EQU 0x50
+	BOTTLE_LEN2 EQU 0x66 ;44
 
 	ALIGNED_LEN EQU 0x00
 	ALIGNED_LEN1 EQU 0x50
-	ALIGNED_LEN2 EQU 0x66 ;45
+	ALIGNED_LEN2 EQU 0x04 ;45
 
 	SECOND_LEN EQU 0x00
-	SECOND_LEN1 EQU 0x50
-	SECOND_LEN2 EQU 0x04 ;46
+	SECOND_LEN1 EQU 0x41
+	SECOND_LEN2 EQU 0x29 ;46
 
 	NOT_LEN EQU 0x00
-	NOT_LEN1 EQU 0x41
-	NOT_LEN2 EQU 0x29 ;47
+	NOT_LEN1 EQU 0x31
+	NOT_LEN2 EQU 0x8c ;47
 	;bruh_LEN EQU 0x00187c ; 44 
 
 
@@ -795,10 +796,10 @@ MainProgram:
     lcall Init_all ; Initialize the hardware
 	mov SP, #0x7f ; Setup stack pointer to the start of indirectly accessable data memory minus one
 
-	clr mode 
+	setb mode 
 	setb TR2
+    mov prev_percent, #0x01
     ljmp calc_quad
-
 
 timer_count:
     push acc
@@ -865,11 +866,13 @@ calc_quad:
 	jnb align_flag, perform_calc
 	lcall announce_aligned
 	clr align_flag
-	sjmp perform_calc
+    ljmp perform_calc
+
 not_aligned:
 	setb align_flag
 	lcall announce_not_aligned
 	jb ALIGNED, $
+    sjmp calc_quad
 perform_calc:
 	Send_Constant_String_L1(#Msgpercent2)
     Send_Constant_String_L2(#Clear_Line)
@@ -956,6 +959,7 @@ is_hundred:
 not_equal:
 	lcall determine_digit
     lcall Display_unformated_BCD
+    mov prev_percent, a
 equal:
     wait_for_response(calc_quad)
 
