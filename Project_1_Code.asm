@@ -367,11 +367,12 @@ dseg at 30H
 
 	
 BSEG
-mf: 	dbit 1
-mode: 	dbit 1
-sound_ready: dbit 1
-one_second_passed: dbit 1
-sound_playing: dbit 1
+mf: 				dbit 1
+mode: 				dbit 1
+sound_ready:		dbit 1
+one_second_passed: 	dbit 1
+sound_playing: 		dbit 1
+hundred_flag: 		dbit 1
 
 $NOLIST
 $include(LCD_4bit_og.inc)
@@ -710,24 +711,23 @@ MainProgram:
 
 cap_loop:
 	clr mode 
-	Send_Constant_String_L1(#WelcomeMsg1)
+	;Send_Constant_String_L1(#WelcomeMsg1)
     ;WaitSec(#1)
-    Send_Constant_String_L2(#WelcomeMsg2)
+    ;Send_Constant_String_L2(#WelcomeMsg2)
     ;WaitSec(#2)
 show_again:
-    Send_Constant_String_L1(#WelcomeMsg3)
-    Send_Constant_String_L2(#WelcomeMsg4)
+   ; Send_Constant_String_L1(#WelcomeMsg3)
+    ;Send_Constant_String_L2(#WelcomeMsg4)
     ;WaitSec(#2)
-    Send_Constant_String_L1(#WelcomeMsg5)
-    Send_Constant_String_L2(#WelcomeMsg6)
+    ;Send_Constant_String_L1(#WelcomeMsg5)
+    ;Send_Constant_String_L2(#WelcomeMsg6)
     ;WaitSec(#2)
-    Send_Constant_String_L1(#WelcomeMsg7)
-    Send_Constant_String_L2(#WelcomeMsg8)
+    ;Send_Constant_String_L1(#WelcomeMsg7)
+    ;Send_Constant_String_L2(#WelcomeMsg8)
 
     setb TR2
-    mov a, #0x00
     ;lcall determine_digit
-    ljmp calc_percent
+    ljmp calc_quad
 
 forever2:
     sjmp forever2
@@ -793,7 +793,7 @@ calc_percent:
     lcall Display_unformated_BCD
     wait_for_response(calc_percent)
 
-calc_2:
+calc_quad:
 	Send_Constant_String_L1(#Msgpercent2)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
@@ -863,6 +863,16 @@ calc_2:
 
     lcall hex2bcd
     lcall Display_unformated_BCD
+
+	mov a, bcd+1
+	anl a, #0x0F
+	cjne a, #0x01, not_hundred        
+	setb hundred_flag                    
+not_hundred: 
+	mov a, bcd+0
+	lcall rounder
+	lcall determine_digit
+
     wait_for_response(calc_2)
 
 cap_pf:
@@ -925,12 +935,13 @@ rounder:
 
     rounder_ret:
         pop acc
-        pop AR0
-        pop AR1
         ret
 
 determine_digit:
     push acc
+	jnb hundred_flag, is_zero
+	ljmp play_full
+is_zero:
     cjne a, #0x00, skip_empty
     sjmp play_empty
    
