@@ -205,24 +205,6 @@ sound_index :
 	NOT1 EQU 0x00
 	NOT2 EQU 0xdd ;47
 
-	POURING EQU 0x0c
-	POURING1 EQU 0x31
-	POURING2 EQU 0x1e
-
-	SLOWLY EQU 0x0c
-	SLOWLY1 EQU 0x73
-	SLOWLY2 EQU 0xa1
-
-	QUICKLY EQU 0x0c
-	QUICKLY1 EQU 0xae
-	QUICKLY2 EQU 0x8e
-
-	MODERATELY EQU 0x0c
-	MODERATELY1 EQU 0xef
-	MODERATELY2 EQU 0x56
-
-	
-
 	;bruh1 EQU 0x0b16e0 ; 44 
 	;bruh2 EQU 0x0b2f5c :
 
@@ -420,23 +402,6 @@ Size_sound:
 	NOT_LEN EQU 0x00
 	NOT_LEN1 EQU 0x31
 	NOT_LEN2 EQU 0x8c ;47
-
-	POURING_LEN EQU 0x00
-	POURING_LEN1 EQU 0x42
-	POURING_LEN2 EQU 0x83
-
-	SLOWLY_LEN EQU 0x00
-	SLOWLY_LEN1 EQU 0x3a
-	SLOWLY_LEN2 EQU 0xed
-
-	QUICKLY_LEN EQU 0x00
-	QUICKLY_LEN1 EQU 0x40
-	QUICKLY_LEN2 EQU 0xc8
-
-	MODERATELY_LEN EQU 0x00
-	MODERATELY_LEN1 EQU 0x63
-	MODERATELY_LEN2 EQU 0xa1
-
 	;bruh_LEN EQU 0x00187c ; 44 
 
 
@@ -444,9 +409,11 @@ FLASH_CE EQU P0.3
 SPEAKER  EQU P1.3
 BEEP 	 EQU P2.5
 
-
-CAL_quad          equ P3.1
-CAL_roc          equ P2.6
+AUTO            equ P2.1
+ONREQ           equ P2.4
+CAL_freq        equ P3.3
+CAL_nF          equ P3.1
+CAL_uF          equ P2.6
 ALIGNED			equ P2.2
 
 LCD_RS equ P2.0
@@ -501,9 +468,10 @@ $LIST
 
 cseg
 
+Msgfreq:     db 'Frequency   (Hz)', 0
 Msgpfn:      db 'Capacitance (pF)', 0
-Msgroc:  	 db 'Rate of Change  ', 0
-Msgpercent: db 'Percentage   (%)', 0
+Msgpercent:  db 'Percentage   lin', 0
+Msgpercent2: db 'Percentage   (%)', 0
 WelcomeMsg1: db '     Welcome    ', 0
 WelcomeMsg2: db 'Choose an Option', 0
 WelcomeMsg3: db 'B1: Auto Recalc ', 0
@@ -859,10 +827,9 @@ timer_count:
     ;lcall DisplayBCD_5
     ;wait_for_response(calc_2)
 	
-calc_roc:
-    Send_Constant_String_L1(#Msgroc)
+calc_percent:
+    Send_Constant_String_L1(#Msgpercent)
     Send_Constant_String_L2(#Clear_Line)
-	mov prev_percent, a
     lcall timer_count
     Load_x(1000000000)
     mov y+0, TL0
@@ -877,77 +844,23 @@ calc_roc:
     Load_y(492) ; left shift by 2 decimals
     lcall div32
     
-    Load_y(10000)
-    lcall div32
-	;269 -1.45x + 0.00175Ex^2
-    mov helper_1+0, x+0
-    mov helper_1+1, x+1
-    mov helper_1+2, x+2
-    mov helper_1+3, x+3
-	
-	Load_y(145) ; total zeros : 3
-	lcall mul32
-
-	Load_y(10)
-	lcall div32 ; 14.5*x in x currently
-
-	mov helper_2+0, x+0
-    mov helper_2+1, x+1
-    mov helper_2+2, x+2
-    mov helper_2+3, x+3
-
-	;helper_2 contains 14.5x
-
-	mov x+0, helper_1+0
-    mov x+1, helper_1+1
-    mov x+2, helper_1+2
-    mov x+3, helper_1+3
-
-	mov y+0, x+0
-    mov y+1, x+1
-    mov y+2, x+2
-    mov y+3, x+3
-	; compute x^2
-	lcall mul32
-	;keep track of how many zeros to shift back (4)
-	Load_y(175)
-	lcall mul32 
+	; 0.756x-425
 	Load_y(10000)
-	lcall div32 
+	lcall div32
+	
+	Load_y(756)
+	lcall mul32
 
-	mov y+0, helper_2+0
-    mov y+1, helper_2+1
-    mov y+2, helper_2+2
-    mov y+3, helper_2+3
+	Load_y(1000)
+	lcall div32
 
-    lcall sub32 ;0.0044x^2 + 1.204x
-    
-	Load_y(2690)
-    lcall add32
-    
-	Load_y(9)
-	lcall div32 
-
-	lcall x_gt_y
-	jnb mf, swap_xy
-	sjmp final_calc
-
-swap_xy:
-	mov a, y+0
-	mov helper_1, a
-	mov a, x+0
-	mov y+0, a
-	mov a, helper_1
-	mov x+0, a
-final_calc:
+	Load_y(425)
 	lcall sub32
-	lcall hex2bcd
-	mov a, bcd+0
-	lcall rounder_10
-	lcall determine_roc
-    lcall Display_unformated_BCD
-    wait_for_response(calc_roc)
-
+	
+    lcall hex2bcd
+    Set_Cursor(2,8)
+    Display_BCD(bcd+0)    
+    wait_for_response(calc_percent)
 
 calc_quad:
 	jb ALIGNED, not_aligned
@@ -962,7 +875,7 @@ not_aligned:
 	jb ALIGNED, $
     sjmp calc_quad
 perform_calc:
-	Send_Constant_String_L1(#Msgpercent)
+	Send_Constant_String_L1(#Msgpercent2)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
     Load_x(1000000000)
@@ -1046,7 +959,7 @@ is_hundred:
 	ljmp equal
 not_equal:
 	lcall determine_digit
-	Set_Cursor(2,8)
+    Set_Cursor(2,8)
     Display_BCD(bcd+0)
     mov prev_percent, a
 equal:
@@ -1067,7 +980,7 @@ cap_pf:
     Load_y(492)
     lcall div32
     lcall hex2bcd
-    lcall Display_unformated_BCD
+    ;lcall Display_unformated_BCD
     wait_for_response(cap_pf)
 
 rounder:
@@ -1107,102 +1020,6 @@ rounder:
 
     rounder_ret:
         ret
-
-rounder_10:
-
-    mov helper_3, a
-    swap a
-    mov helper_4, a
-
-    anl helper_4, #0x0F ; 4 holds bits of left BCD digit
-    anl helper_3, #0x0F ; 3 hold bits of right BCD digit
-
-    mov a, helper_3
-    
-    cjne a, #0x00, round_0_10
-    cjne a, #0x01, round_0_10
-    cjne a, #0x02, round_0_10
-	cjne a, #0x03, round_0_10
-	cjne a, #0x04, round_0_10
-    sjmp round_10_10 
-
-	round_0_10:
-        mov a, helper_4
-        swap a
-        sjmp rounder_ret
-
-
-    round_10_10:
-        mov a, helper_4 
-        inc a
-        swap a
-        sjmp rounder_ret
-
-    rounder_ret_10:
-        ret
-
-determine_roc:
-	cjne a, #0x10, compare_twenty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#SLOWLY, #SLOWLY1, #SLOWLY2, #SLOWLY_LEN, #SLOWLY_LEN1, #SLOWLY_LEN2)
-	ljmp return_roc
-compare_twenty:
-	cjne a, #0x10, compare_thirty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#SLOWLY, #SLOWLY1, #SLOWLY2, #SLOWLY_LEN, #SLOWLY_LEN1, #SLOWLY_LEN2)
-	ljmp return_roc
-
-compare_thirty:
-	cjne a, #0x10, compare_forty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#SLOWLY, #SLOWLY1, #SLOWLY2, #SLOWLY_LEN, #SLOWLY_LEN1, #SLOWLY_LEN2)
-	ljmp return_roc
-
-compare_forty:
-	cjne a, #0x10, compare_fifty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#MODERATELY, #MODERATELY1, #MODERATELY2, #MODERATELY_LEN, #MODERATELY_LEN1, #MODERATELY_LEN2)
-	ljmp return_roc
-
-compare_fifty:
-	cjne a, #0x10, compare_sixty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#MODERATELY, #MODERATELY1, #MODERATELY2, #MODERATELY_LEN, #MODERATELY_LEN1, #MODERATELY_LEN2)
-	ljmp return_roc
-
-compare_sixty:
-	cjne a, #0x10, compare_seventy
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#MODERATELY, #MODERATELY1, #MODERATELY2, #MODERATELY_LEN, #MODERATELY_LEN1, #MODERATELY_LEN2)
-	ljmp return_roc
-
-compare_seventy:
-	cjne a, #0x10, compare_eighty
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#MODERATELY, #MODERATELY1, #MODERATELY2, #MODERATELY_LEN, #MODERATELY_LEN1, #MODERATELY_LEN2)
-	ljmp return_roc
-
-compare_eighty:
-	cjne a, #0x10, compare_ninety
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#QUICKLY, #QUICKLY1, #QUICKLY2, #QUICKLY_LEN, #QUICKLY_LEN1, #QUICKLY_LEN2)
-	ljmp return_roc
-
-compare_ninety:
-	cjne a, #0x10, compare_hundred
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#QUICKLY, #QUICKLY1, #QUICKLY2, #QUICKLY_LEN, #QUICKLY_LEN1, #QUICKLY_LEN2)
-	ljmp return_roc
-
-compare_hundred:
-	play_sound(#POURING, #POURING1, #POURING2, #POURING_LEN, #POURING_LEN1, #POURING_LEN2)
-	play_sound(#QUICKLY, #QUICKLY1, #QUICKLY2, #QUICKLY_LEN, #QUICKLY_LEN1, #QUICKLY_LEN2)
-	
-	
-return_roc:
-	ret
-	
-
 
 determine_digit:
     push acc
