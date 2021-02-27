@@ -48,6 +48,7 @@ TIMER2_RELOAD  EQU 0x10000-(SYSCLK/TIMER2_RATE)
 F_SCK_MAX      EQU 20000000
 BAUDRATE       EQU 115200
 
+; SOUND GENERATION SETTINGS: text2speech: slow speed, 8 bit, 22050 sample, 2000 silence bytes
 sound_index :
     ZERO EQU 0x00
 	ZERO1 EQU 0x00
@@ -180,7 +181,23 @@ sound_index :
 	FULL2 EQU 0x07 ; 42 
 	EMPTY EQU 0x0a
 	EMPTY1 EQU 0xcf
-	EMPTY2 EQU 0xf5 ; 43  
+	EMPTY2 EQU 0xfd ; 43  
+
+	BOTTLE EQU 0x0a
+	BOTTLE1 EQU 0xf7
+	BOTTLE2 EQU 0x2a ;44
+
+	ALIGNED EQU 0x0b
+	ALIGNED1 EQU 0x1f
+	ALIGNED2 EQU 0x41 ;45
+
+	SECOND EQU 0x0b
+	SECOND1 EQU 0x6f
+	SECOND2 EQU 0xb0 ;46
+
+	NOT EQU 0x0b
+	NOT1 EQU 0xbf
+	NOT2 EQU 0xbf ;47
 	;bruh1 EQU 0x0b16e0 ; 44 
 	;bruh2 EQU 0x0b2f5c :
 
@@ -190,146 +207,207 @@ Size_sound:
 	ZERO_LEN EQU 0x00
 	ZERO_LEN1 EQU 0x39
 	ZERO_LEN2 EQU 0xb5 ; 0 
+
 	ONE_LEN EQU 0x00
 	ONE_LEN1 EQU 0x3c
 	ONE_LEN2 EQU 0xd2 ; 1 
+
 	TWO_LEN EQU 0x00
 	TWO_LEN1 EQU 0x20
 	TWO_LEN2 EQU 0xe5 ; 2 
+
 	THREE_LEN EQU 0x00
 	THREE_LEN1 EQU 0x32
 	THREE_LEN2 EQU 0x74 ; 3 
+
 	FOUR_LEN EQU 0x00
 	FOUR_LEN1 EQU 0x3d
 	FOUR_LEN2 EQU 0x88 ; 4 
+
 	FIVE_LEN EQU 0x00
 	FIVE_LEN1 EQU 0x2b
 	FIVE_LEN2 EQU 0x27 ; 5 
+
 	SIX_LEN EQU 0x00
 	SIX_LEN1 EQU 0x36
 	SIX_LEN2 EQU 0xe9 ; 6 
+
 	SEVEN_LEN EQU 0x00
 	SEVEN_LEN1 EQU 0x3f
 	SEVEN_LEN2 EQU 0x1e ; 7 
+
 	EIGHT_LEN EQU 0x00
 	EIGHT_LEN1 EQU 	0x22
 	EIGHT_LEN2 EQU 0xee ; 8 
+
 	NINE_LEN EQU 0x00
 	NINE_LEN1 EQU 0x3a
 	NINE_LEN2 EQU 0xfc ; 9 
+
 	TEN_LEN EQU 0x00
 	TEN_LEN1 EQU 0x39
 	TEN_LEN2 EQU 0x21 ; 10 
+
 	ELEVEN_LEN EQU 0x00
 	ELEVEN_LEN1 EQU 0x45
 	ELEVEN_LEN2 EQU 0x63 ; 11 
+
 	TWELVE_LEN EQU 0x00
 	TWELVE_LEN1 EQU 0x45
 	TWELVE_LEN2 EQU 0xa2 ; 12 
+
 	THIRTEEN_LEN EQU 0x00
 	THIRTEEN_LEN1 EQU 0x43
 	THIRTEEN_LEN2 EQU 0x49 ; 13 
+
 	FOURTEEN_LEN EQU 0x00
 	FOURTEEN_LEN1 EQU 0x4d
 	FOURTEEN_LEN2 EQU 0x0f ; 14 
+
 	FIFTEEN_LEN EQU 0x00
 	FIFTEEN_LEN1 EQU 0x4c
 	FIFTEEN_LEN2 EQU 0x6a ; 15 
+
 	SIXTEEN_LEN EQU 0x00
 	SIXTEEN_LEN1 EQU 0x4e
 	SIXTEEN_LEN2 EQU 0xd9 ; 16 
+
 	SEVENTEEN_LEN EQU 0x00
 	SEVENTEEN_LEN1 EQU 0x58
 	SEVENTEEN_LEN2 EQU 0x0a ; 17 
+
 	EIGHTEEN_LEN EQU 0x00
 	EIGHTEEN_LEN1 EQU 0x3d
 	EIGHTEEN_LEN2 EQU 0xcc ; 18 
+
 	NINETEEN_LEN EQU 0x00
 	NINETEEN_LEN1 EQU 0x4a
 	NINETEEN_LEN2 EQU 0x14 ; 19 
+
 	TWENTY_LEN EQU 0x00
 	TWENTY_LEN1 EQU 0x49
-	TWENTY_LEN2 EQU 0xef ; 20 
+	TWENTY_LEN2 EQU 0xef ; 20
+
 	THIRTY_LEN EQU 0x00
 	THIRTY_LEN1 EQU 0x46
 	THIRTY_LEN2 EQU 0x60 ; 21 
+	
 	FORTY_LEN EQU 0x00
 	FORTY_LEN1 EQU 0x50
 	FORTY_LEN2 EQU 0x13 ; 22 
+
 	FIFTY_LEN EQU 0x00
 	FIFTY_LEN1 EQU 0x4d
 	FIFTY_LEN2 EQU 0xad ; 23 
+
 	SIXTY_LEN EQU 0x00
 	SIXTY_LEN1 EQU 0x55
 	SIXTY_LEN2 EQU 0xb1 ; 24 
+
 	SEVENTY_LEN EQU 0x00
 	SEVENTY_LEN1 EQU 0x5a
 	SEVENTY_LEN2 EQU 0xd3 ; 25 
+
 	EIGHTY_LEN EQU 0x00
 	EIGHTY_LEN1 EQU 0x3f
 	EIGHTY_LEN2 EQU 0xf1 ; 26 
+
 	NINETY_LEN EQU 0x00
 	NINETY_LEN1 EQU 0x54
 	NINETY_LEN2 EQU 0x24 ; 27 
+
 	HUNDRED_LEN EQU 0x00
 	HUNDRED_LEN1 EQU 0x43
 	HUNDRED_LEN2 EQU 0x67 ; 28 
+
 	POINT_LEN EQU 0x00
 	POINT_LEN1 EQU 0x3c
 	POINT_LEN2 EQU 0x5a ; 29 
+
 	NANO_LEN EQU 0x00
 	NANO_LEN1 EQU 0x3e
 	NANO_LEN2 EQU 0xd7 ; 30 
+
 	MICRO_LEN EQU 0x00
 	MICRO_LEN1 EQU 0x4b
 	MICRO_LEN2 EQU 0x8f ; 31 
+
 	FARADS_LEN EQU 0x00
 	FARADS_LEN1 EQU 0x3f
 	FARADS_LEN2 EQU 0x80 ; 32 
+
 	WATER_LEN EQU 0x00
 	WATER_LEN1 EQU 0x38
 	WATER_LEN2 EQU 0x34 ; 33 
+
 	LEVEL_LEN EQU 0x00
 	LEVEL_LEN1 EQU 0x47
 	LEVEL_LEN2 EQU 0x0e ; 34 
+
 	CENTI_LEN EQU 0x00
 	CENTI_LEN1 EQU 0x4d
 	CENTI_LEN2 EQU 0x80 ; 35 
+
 	MILLI_LEN EQU 0x00
 	MILLI_LEN1 EQU 0x38
 	MILLI_LEN2 EQU 0x94 ; 36 
+
 	METERS_LEN EQU 0x00
 	METERS_LEN1 EQU 0x55
 	METERS_LEN2 EQU 0xdc ; 37 
+
 	PER_LEN EQU 0x00
 	PER_LEN1 EQU 0x2f
 	PER_LEN2 EQU 0xbc ; 38 
+
 	CENT_LEN EQU 0x00
 	CENT_LEN1 EQU 0x36
 	CENT_LEN2 EQU 0x70 ; 39 
+
 	CUP_LEN EQU 0x00
 	CUP_LEN1 EQU 0x2d
-	CUP_LEN2 EQU 0x3c ; 40 
+	CUP_LEN2 EQU 0x3c ; 40
+
 	IS_LEN EQU 0x00
 	IS_LEN1 EQU 0x23
 	IS_LEN2 EQU 0xa6 ; 41 
+
 	FULL_LEN EQU 0x00
 	FULL_LEN1 EQU 0x2a
-	FULL_LEN2 EQU 0xee ; 42 
+	FULL_LEN2 EQU 0xf6 ; 42 
+
 	EMPTY_LEN EQU 0x00
-	EMPTY_LEN1 EQU 0x46
-	EMPTY_LEN2 EQU 0xeb ; 43 
+	EMPTY_LEN1 EQU 0x27
+	EMPTY_LEN2 EQU 0x2d ; 43 
+
+	BOTTLE_LEN EQU 0x00
+	BOTTLE_LEN1 EQU 0x28
+	BOTTLE_LEN2 EQU 0x20 ;44
+
+	ALIGNED_LEN EQU 0x00
+	ALIGNED_LEN1 EQU 0x50
+	ALIGNED_LEN2 EQU 0x66 ;45
+
+	SECOND_LEN EQU 0x00
+	SECOND_LEN1 EQU 0x50
+	SECOND_LEN2 EQU 0x04 ;46
+
+	NOT_LEN EQU 0x00
+	NOT_LEN1 EQU 0x41
+	NOT_LEN2 EQU 0x29 ;47
 	;bruh_LEN EQU 0x00187c ; 44 
 
 
 FLASH_CE EQU P0.3
 SPEAKER  EQU P1.3
+BEEP 	 EQU P2.5
 
 AUTO            equ P2.1
 ONREQ           equ P2.4
 CAL_freq        equ P3.3
 CAL_nF          equ P3.1
 CAL_uF          equ P2.6
+ALIGNED			equ P2.2
 
 LCD_RS equ P2.0
 LCD_RW equ P1.7
@@ -358,11 +436,12 @@ dseg at 30H
 	x:   ds 4
 	y:   ds 4
 	bcd: ds 5
-    second_counter: ds 2
 	helper_1: ds 4
 	helper_2: ds 4
     helper_3: ds 1
 	helper_4: ds 1
+	prev_percent: 	ds 1
+	second_counter: ds 2
 
 
 	
@@ -373,6 +452,7 @@ sound_ready:		dbit 1
 one_second_passed: 	dbit 1
 sound_playing: 		dbit 1
 hundred_flag: 		dbit 1
+align_flag: 		dbit 1
 
 $NOLIST
 $include(LCD_4bit_og.inc)
@@ -709,29 +789,10 @@ MainProgram:
     lcall Init_all ; Initialize the hardware
 	mov SP, #0x7f ; Setup stack pointer to the start of indirectly accessable data memory minus one
 
-cap_loop:
 	clr mode 
-	;Send_Constant_String_L1(#WelcomeMsg1)
-    ;WaitSec(#1)
-    ;Send_Constant_String_L2(#WelcomeMsg2)
-    ;WaitSec(#2)
-show_again:
-   ; Send_Constant_String_L1(#WelcomeMsg3)
-    ;Send_Constant_String_L2(#WelcomeMsg4)
-    ;WaitSec(#2)
-    ;Send_Constant_String_L1(#WelcomeMsg5)
-    ;Send_Constant_String_L2(#WelcomeMsg6)
-    ;WaitSec(#2)
-    ;Send_Constant_String_L1(#WelcomeMsg7)
-    ;Send_Constant_String_L2(#WelcomeMsg8)
-
-    setb TR2
-    ;lcall determine_digit
+	setb TR2
     ljmp calc_quad
 
-forever2:
-    sjmp forever2
-    ; wait_for_response(show_again)
 
 timer_count:
     push acc
@@ -794,6 +855,16 @@ calc_percent:
     wait_for_response(calc_percent)
 
 calc_quad:
+	jb ALIGNED, not_aligned
+	jnb align_flag, perform_calc
+	lcall announce_aligned
+	clr align_flag
+	sjmp perform_calc
+not_aligned:
+	setb align_flag
+	lcall announce_not_aligned
+	jb ALIGNED, $
+perform_calc:
 	Send_Constant_String_L1(#Msgpercent2)
     Send_Constant_String_L2(#Clear_Line)
     lcall timer_count
@@ -863,7 +934,6 @@ calc_quad:
 
     lcall hex2bcd
 
-
 	mov a, bcd+1
 	anl a, #0x0F
 	cjne a, #0x01, not_hundred        
@@ -875,8 +945,12 @@ is_hundred:
 	mov a, bcd+0
 	lcall rounder
     mov bcd+0, a
+	cjne a, prev_percent, not_equal
+	ljmp equal
+not_equal:
 	lcall determine_digit
     lcall Display_unformated_BCD
+equal:
     wait_for_response(calc_quad)
 
 cap_pf:
@@ -1173,9 +1247,29 @@ play_full:
 	play_sound(#CUP, #CUP1, #CUP2, #CUP_LEN, #CUP_LEN1, #CUP_LEN2)
     play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
     play_sound(#FULL, #FULL1, #FULL2, #FULL_LEN, #FULL_LEN1, #FULL_LEN2)
+	setb BEEP
+	Wait_Milli_Seconds(#200)
+	clr BEEP
 
 return_determine:
 	pop acc
+	ret
+
+announce_aligned:
+
+	play_sound(#BOTTLE, #BOTTLE1, #BOTTLE2, #BOTTLE_LEN, #BOTTLE_LEN1, #BOTTLE_LEN2)
+	play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
+	play_sound(#ALIGNED, #ALIGNED1, #ALIGNED2, #ALIGNED_LEN, #ALIGNED_LEN1, #ALIGNED_LEN2)
+
+	ret
+
+announce_not_aligned:
+
+	play_sound(#BOTTLE, #BOTTLE1, #BOTTLE2, #BOTTLE_LEN, #BOTTLE_LEN1, #BOTTLE_LEN2)
+	play_sound(#IS, #IS1, #IS2, #IS_LEN, #IS_LEN1, #IS_LEN2)
+	play_sound(#NOT, #NOT1, #NOT2, #NOT_LEN, #NOT_LEN1, #NOT_LEN2)
+	play_sound(#ALIGNED, #ALIGNED1, #ALIGNED2, #ALIGNED_LEN, #ALIGNED_LEN1, #ALIGNED_LEN2)
+
 	ret
 
 
